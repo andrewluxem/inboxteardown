@@ -73,4 +73,48 @@ describe('content schemas reject other contract violations', () => {
   it('rejects duplicate ids within a file', () => {
     expect(scoreboardSchema.safeParse({ ...good, emails: [good.emails[0], good.emails[0]] }).success).toBe(false);
   });
+  it('rejects a check result outside pass, fail, unverified', () => {
+    expect(scoreboardSchema.safeParse(withEmail({ checks: [{ name: 'Links resolve', result: 'warn' }] })).success).toBe(false);
+  });
+  it('rejects a screenshot that is neither /shots/ nor https', () => {
+    expect(scoreboardSchema.safeParse(withEmail({ screenshot: 'http://example.com/a.png' })).success).toBe(false);
+  });
+});
+
+describe('rubric v1 contract additions', () => {
+  const good = frontmatter(join(content('scoreboard'), mdFiles('scoreboard')[0]!)) as {
+    emails: Record<string, unknown>[];
+  };
+  const withEmail = (patch: Record<string, unknown>) => ({ ...good, emails: [{ ...good.emails[0], ...patch }] });
+
+  it('accepts an unverified check', () => {
+    const r = scoreboardSchema.safeParse(
+      withEmail({ checks: [{ name: 'Secondary links resolve', result: 'unverified', detail: 'HTTP 403 twice' }] }),
+    );
+    expect(r.error?.issues ?? []).toEqual([]);
+  });
+  it('accepts a Blob screenshot URL', () => {
+    const r = scoreboardSchema.safeParse(withEmail({ screenshot: 'https://shots.public.blob.vercel-storage.com/2026-10-06-gap-1.png' }));
+    expect(r.error?.issues ?? []).toEqual([]);
+  });
+  it('rejects a cap with no failed check behind it', () => {
+    const e = good.emails[0] as { dimensions: Record<string, Record<string, unknown>> };
+    const r = scoreboardSchema.safeParse(
+      withEmail({
+        dimensions: { ...e.dimensions, trust: { ...e.dimensions.trust, score: 1 } },
+        checks: [{ name: 'Unsubscribe present', result: 'pass' }],
+      }),
+    );
+    expect(r.success).toBe(false);
+  });
+  it('accepts a cap backed by a failed check with evidence', () => {
+    const e = good.emails[0] as { dimensions: Record<string, Record<string, unknown>> };
+    const r = scoreboardSchema.safeParse(
+      withEmail({
+        dimensions: { ...e.dimensions, technical_hygiene: { ...e.dimensions.technical_hygiene, score: 1 } },
+        checks: [{ name: 'Primary CTA resolves', result: 'fail', detail: 'HTTP 404 twice, browser UA' }],
+      }),
+    );
+    expect(r.error?.issues ?? []).toEqual([]);
+  });
 });

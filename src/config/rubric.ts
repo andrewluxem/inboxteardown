@@ -1,13 +1,14 @@
-// TODO(andrew): confirm names from email-quality-rubric-client.md
-// Only "Trust" and "Technical hygiene" are confirmed. The keys are part of the
+// Display names follow Inbox Teardown Rubric v1. The keys are part of the
 // content contract and must not change; only the display names may.
+// offer_clarity displays as "Clarity" and personalization as "Relevance" so
+// every dimension applies to every send (welcome and transactional included).
 export const DIMENSIONS = {
   subject_preheader: 'Subject & preheader',
-  offer_clarity: 'Offer clarity',
+  offer_clarity: 'Clarity',
   design_hierarchy: 'Design & hierarchy',
   copy_voice: 'Copy & voice',
-  cta: 'CTA',
-  personalization: 'Personalization',
+  cta: 'Call to action',
+  personalization: 'Relevance',
   trust: 'Trust',
   technical_hygiene: 'Technical hygiene',
 } as const;
