@@ -38,6 +38,9 @@ emails:                             # at least one
       - { name: "Links resolve", result: fail, detail: "1 of 9 links returns 404" }
       - { name: "Unsubscribe present", result: pass }
     screenshot: null                   # or "/shots/<file>"; put the file in public/shots/
+    correction:                        # optional; set when a published score changes
+      date: 2026-10-08
+      note: "Technical hygiene raised from 1 to 3: the CTA link was fixed before most opens." 
 ---
 ```
 
@@ -49,6 +52,8 @@ Rules:
 - Subjects are rendered as text. Merge tags such as `{{FirstName}}` show
   literally, which is intended. Quote any subject that starts with `{`, `[`,
   `*`, `!`, or contains `: `.
+- `correction` is optional. When present, the scorecard shows "Corrected {date}: {note}" in the
+  verdict block. Update the dimension scores themselves to the corrected values.
 - Unknown keys anywhere in an email fail the build.
 
 ### Industries
@@ -130,11 +135,14 @@ categories:
 because the page needs an update time and an October baseline and must be
 built from this file alone. Both are optional.
 
-## Pages: `src/content/pages/methodology.md`
+## Pages: `src/content/pages/*.md`
 
-Frontmatter: `title`, `description`, optional `rubric_version`, `rubric_date`.
-The body is the methodology prose. Dimension names come from
-`src/config/rubric.ts`, not from this file.
+`methodology.md` and `privacy.md`. Frontmatter: `title`, `description`,
+optional `rubric_version`, `rubric_date`. Dimension names come from
+`src/config/rubric.ts`, not from these files. The bodies may use
+`{contactEmail}` (rendered as a mailto link) and `{emailProvider}` (the
+provider name, or `[EMAIL PROVIDER]` while unset); both are filled from
+`src/config/site.ts` at build.
 
 ## Cross-file checks
 
