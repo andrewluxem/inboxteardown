@@ -10,16 +10,19 @@
     "check": "astro check",
     "test": "vitest run",
     "screenshots": "node scripts/screenshots.mjs",
-    "prelaunch": "node scripts/prelaunch-check.mjs"
+    "prelaunch": "node scripts/prelaunch-check.ts"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource/archivo-narrow": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@vercel/analytics": "^2.0.1",
-    "astro": "^7.3.6"
+    "astro": "^7.3.6",
+    "satori": "^0.36.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
