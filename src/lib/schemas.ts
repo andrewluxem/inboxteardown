@@ -63,6 +63,13 @@ export const emailSchema = z.strictObject({
     .regex(/^\/shots\/[^\s]+$/, 'screenshot must be a path under /shots/ (files live in public/shots/)')
     .nullable()
     .default(null),
+  // Set when a score was changed after publication; shown on the scorecard.
+  correction: z
+    .strictObject({
+      date: isoDate,
+      note: z.string().min(1),
+    })
+    .optional(),
 });
 
 export const scoreboardSchema = z

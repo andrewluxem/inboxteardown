@@ -14,6 +14,7 @@ const PAGES = [
   ['brand', '/brand/kestrel-outdoor/'],
   ['teardown-archive', '/teardown/'],
   ['tracker', '/tracker/black-friday-2026/'],
+  ['privacy', '/privacy/'],
 ];
 
 const server = spawn('npx', ['astro', 'preview', '--port', String(PORT)], { stdio: 'ignore' });

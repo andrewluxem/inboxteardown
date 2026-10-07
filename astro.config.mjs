@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { parse } from 'yaml';
+import { SITE } from './src/config/site.ts';
 
 /**
  * Trackers stay out of the sitemap until their content file says
@@ -21,9 +22,14 @@ function unpublishedTrackerPaths() {
 const hidden = ['/signups-soon/', ...unpublishedTrackerPaths()];
 
 export default defineConfig({
-  site: 'https://inboxteardown.com',
+  site: SITE.siteUrl,
   output: 'static',
   trailingSlash: 'always',
+  vite: {
+    // OG image tooling runs only at build time; let Node load it as-is
+    // (resvg ships a native addon and satori relies on CommonJS globals).
+    ssr: { external: ['satori', '@resvg/resvg-js'] },
+  },
   integrations: [
     sitemap({
       filter: (page) => !hidden.some((path) => new URL(page).pathname === path),

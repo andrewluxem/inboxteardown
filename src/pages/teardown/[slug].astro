@@ -6,6 +6,7 @@ import EmailMiniCard from '../../components/EmailMiniCard.astro';
 import SignupCard from '../../components/SignupCard.astro';
 import { getAllEmails, getTeardowns, teardownSlug, type TeardownEntry } from '../../lib/content';
 import { formatMedium } from '../../lib/dates';
+import { ogPath } from '../../lib/og';
 
 export const getStaticPaths = (async () => {
   const teardowns = await getTeardowns();
@@ -18,7 +19,7 @@ const { Content } = await render(teardown);
 const emails = await getAllEmails();
 const featured = teardown.data.featured_email_ids.map((id) => emails.find((e) => e.id === id)!);
 ---
-<Base title={teardown.data.title} description={teardown.data.dek} ogType="article" noindex={teardown.data.draft}>
+<Base title={teardown.data.title} description={teardown.data.dek} ogType="article" noindex={teardown.data.draft} ogImage={ogPath.teardown(teardownSlug(teardown))}>
   <article class="article">
     <p class="eyebrow num">Teardown No. {teardown.data.number} · {formatMedium(teardown.data.date)} · {teardown.data.read_minutes} min read{teardown.data.draft && ' · Draft'}</p>
     <h1 class="display">{teardown.data.title}</h1>

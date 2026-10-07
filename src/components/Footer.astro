@@ -1,17 +1,20 @@
 ---
-import { SITE } from '../config/site';
+import { SITE, mailto } from '../config/site';
 ---
 <footer class="site-footer">
   <div class="wrap">
-    <p>Scores are commentary on publicly received marketing email.</p>
+    <div class="footer-notes">
+      <p>Scores are commentary on publicly received marketing email.</p>
+      <p>Not affiliated with any brand scored. Corrections: <a href={mailto()}>{SITE.contactEmail}</a></p>
+    </div>
     <ul>
       <li><a href="/methodology/">Methodology</a></li>
+      <li><a href="/privacy/">Privacy</a></li>
       <li><a href="/teardown/rss.xml">RSS</a></li>
-      <!-- TODO(andrew): replace the contact placeholder in src/config/site.ts -->
-      <li><span class="footer-contact">Contact: {SITE.contact}</span></li>
     </ul>
   </div>
 </footer>
 <style>
-  .footer-contact { display: inline-flex; align-items: center; min-height: var(--touch); }
+  .footer-notes p + p { margin-top: 4px; }
+  .footer-notes a { display: inline-block; padding-block: 12px; margin-block: -12px; }
 </style>

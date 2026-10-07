@@ -1,5 +1,5 @@
 ---
-import { SIGNUP_ENDPOINT } from '../config/site';
+import { SIGNUP_ENDPOINT } from '../config/signup';
 
 interface Props {
   /** Hidden `list` value sent with the signup. */
@@ -21,7 +21,13 @@ const method = SIGNUP_ENDPOINT ? 'post' : 'get';
     <button class="btn btn--accent" type="submit">{button}</button>
   </div>
   <p class="form-status" role="status" aria-live="polite"></p>
+  <p class="form-note">We'll send the weekly Teardown. Unsubscribe anytime. <a href="/privacy/">Privacy</a>.</p>
 </form>
+<style>
+  .form-note { margin-top: 10px; font-size: 0.8125rem; color: var(--muted); }
+  :global(.dark) .form-note { color: var(--on-dark-muted); }
+  .form-note a { color: inherit; }
+</style>
 <script>
   for (const form of document.querySelectorAll<HTMLFormElement>('form[data-signup]')) {
     if (form.dataset.live === 'true') continue;
