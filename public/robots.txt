@@ -1,0 +1,14 @@
+# PRE-LAUNCH: block all crawlers.
+#
+# At launch, replace everything below this comment block with:
+#
+#   User-agent: *
+#   Allow: /
+#
+#   Sitemap: https://inboxteardown.com/sitemap-index.xml
+#
+# Unpublished trackers stay out of the index on their own: they carry a
+# noindex meta tag and are excluded from the sitemap.
+
+User-agent: *
+Disallow: /

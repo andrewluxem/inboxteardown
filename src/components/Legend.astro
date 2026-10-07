@@ -1,0 +1,12 @@
+---
+import { BANDS } from '../config/rubric';
+const order = ['strong', 'solid', 'weak', 'capped'] as const;
+---
+<ul class="legend" aria-label="Score bands">
+  {order.map((b) => (
+    <li>
+      <span class:list={['badge', `badge--${b}`]} aria-hidden="true">{b === 'capped' ? 'CAP' : BANDS[b].label.slice(0, 1)}</span>
+      <span><strong>{BANDS[b].label}</strong> {BANDS[b].range}</span>
+    </li>
+  ))}
+</ul>

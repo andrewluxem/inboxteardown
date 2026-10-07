@@ -1,0 +1,43 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { CAPPING_DIMENSIONS, DIMENSIONS, DIMENSION_KEYS } from '../config/rubric';
+import { getPage } from '../lib/content';
+
+const page = await getPage('methodology');
+const { Content } = await render(page);
+---
+<Base title="Methodology" description={page.data.description}>
+  <div class="method">
+    <p class="eyebrow num">Rubric v{page.data.rubric_version} · {page.data.rubric_date}</p>
+    <h1 class="display">{page.data.title}</h1>
+    <p class="lede intro">{page.data.description}</p>
+
+    <section class="section" aria-labelledby="dims-heading">
+      <h2 id="dims-heading" class="eyebrow">The eight dimensions</h2>
+      <ol class="dims card">
+        {DIMENSION_KEYS.map((k, i) => (
+          <li>
+            <span class="num muted">{String(i + 1).padStart(2, '0')}</span>
+            <span class="dim-name">{DIMENSIONS[k]}</span>
+            <span class="mono scale">1 to 5{CAPPING_DIMENSIONS.includes(k) && <strong class="accent"> · a 1 caps the email</strong>}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <div class="prose section">
+      <Content />
+    </div>
+  </div>
+</Base>
+<style>
+  .method { max-width: 880px; }
+  .method h1 { margin-top: 12px; }
+  .intro { margin-top: 18px; }
+  .dims { list-style: none; padding: 4px 20px; margin-top: 10px; max-width: var(--measure); }
+  .dims li { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding-block: 12px; border-top: 1px solid var(--rule-2); }
+  .dims li:first-child { border-top: 0; }
+  .dim-name { font-weight: 600; }
+  .scale { font-size: 0.8125rem; text-align: right; }
+</style>

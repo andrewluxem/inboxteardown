@@ -1,0 +1,39 @@
+---
+import Base from '../../layouts/Base.astro';
+import SignupCard from '../../components/SignupCard.astro';
+import { getTeardowns, teardownSlug } from '../../lib/content';
+import { formatMedium } from '../../lib/dates';
+
+const teardowns = await getTeardowns();
+---
+<Base title="Teardown archive" description="Every weekly Inbox Teardown, newest first.">
+  <div class="with-rail">
+    <div class="main">
+      <p class="eyebrow">Weekly · <a href="/teardown/rss.xml">RSS</a></p>
+      <h1 class="display arch-title">The Teardown</h1>
+      <p class="lede">One long look at a pattern from the week's scores, every Monday.</p>
+      <ol class="archive">
+        {teardowns.map((t) => (
+          <li class="arch-item">
+            <p class="eyebrow num">No. {t.data.number} · {formatMedium(t.data.date)}{t.data.draft && ' · Draft'}</p>
+            <h2 class="display arch-h"><a href={`/teardown/${teardownSlug(t)}/`}>{t.data.title}</a></h2>
+            <p class="arch-dek">{t.data.dek}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+    <aside class="rail" aria-label="Sign up">
+      <SignupCard />
+    </aside>
+  </div>
+</Base>
+<style>
+  .arch-title { margin-top: 12px; }
+  .lede { margin-top: 16px; }
+  .archive { list-style: none; padding: 0; margin-top: 40px; border-top: 2px solid var(--ink); }
+  .arch-item { padding-block: 24px; border-bottom: 1px solid var(--rule); }
+  .arch-h { font-size: clamp(1.75rem, 1.3rem + 2vw, 2.75rem); margin-top: 8px; }
+  .arch-h a { text-decoration: none; }
+  .arch-h a:hover { text-decoration: underline; text-decoration-thickness: 3px; }
+  .arch-dek { margin-top: 10px; color: var(--ink-2); max-width: var(--measure); }
+</style>

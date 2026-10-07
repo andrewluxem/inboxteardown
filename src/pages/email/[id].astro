@@ -1,0 +1,158 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Base from '../../layouts/Base.astro';
+import Pips from '../../components/Pips.astro';
+import { DIMENSIONS, DIMENSION_KEYS, BANDS, TOTAL_MAX } from '../../config/rubric';
+import { industryLabel } from '../../config/industries';
+import { getAllEmails } from '../../lib/content';
+import type { FlatEmail } from '../../lib/brands';
+import { formatDateTimeMT, formatLong } from '../../lib/dates';
+import { cappingDimension, lowestDimension, score } from '../../lib/scoring';
+
+export const getStaticPaths = (async () => {
+  const emails = await getAllEmails();
+  return emails.map((email) => ({ params: { id: email.id }, props: { email } }));
+}) satisfies GetStaticPaths;
+
+interface Props { email: FlatEmail }
+const { email } = Astro.props;
+const s = score(email);
+const cap = cappingDimension(email);
+const low = lowestDimension(email);
+const kindLabel = { campaign: 'Campaign', welcome: 'Welcome', transactional: 'Transactional' } as const;
+
+const verdictWord = s.capped ? 'Capped' : BANDS[s.band].label;
+const reason = cap
+  ? `${DIMENSIONS[cap]} scored 1, which caps the email regardless of its total.`
+  : `Weakest dimension: ${DIMENSIONS[low]} (${email.dimensions[low].score}/5).`;
+---
+<Base title={`${email.brand}: "${email.subject}"`} description={`${email.brand} email scored ${s.total}/${TOTAL_MAX} (${verdictWord}). ${reason}`}>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">Scoreboard</a></li>
+      <li><a href={`/brand/${email.brand_slug}/`}>{email.brand}</a></li>
+      <li aria-current="page">Scorecard</li>
+    </ol>
+  </nav>
+  <p class="eyebrow">Scorecard · Scoreboard of {formatLong(email.boardDate)}</p>
+  <h1 class="display sc-title">{email.brand}</h1>
+
+  <div class="sc">
+    <div class="sc-left">
+      <dl class="meta">
+        <div><dt class="eyebrow">From</dt><dd><a href={`/brand/${email.brand_slug}/`}>{email.brand}</a></dd></div>
+        <div><dt class="eyebrow">Subject</dt><dd class="meta-subject">{email.subject}</dd></div>
+        <div><dt class="eyebrow">Preheader</dt><dd>{email.preheader || <span class="muted">(none)</span>}</dd></div>
+        <div><dt class="eyebrow">Sent</dt><dd class="num">{formatDateTimeMT(email.sent_at)}</dd></div>
+        <div><dt class="eyebrow">Type · Industry</dt><dd>{kindLabel[email.kind]} · {industryLabel(email.industry)}</dd></div>
+        <div><dt class="eyebrow">Themes</dt><dd>
+          {email.themes.length ? <ul class="chips">{email.themes.map((t) => <li class="chip">{t}</li>)}</ul> : <span class="muted">None tagged</span>}
+        </dd></div>
+      </dl>
+
+      {email.screenshot ? (
+        <figure class="shot">
+          <img src={email.screenshot} alt={`Screenshot of the ${email.brand} email "${email.subject}"`} loading="lazy" width="600" />
+        </figure>
+      ) : (
+        <div class="shot shot--empty"><p class="eyebrow">No screenshot for this send</p></div>
+      )}
+    </div>
+
+    <div class="sc-right">
+      <section class="verdict dark" aria-labelledby="verdict-word">
+        <p class="eyebrow">Verdict · Rubric v{email.rubricVersion}</p>
+        <div class="verdict-row">
+          <p id="verdict-word" class="display verdict-word">{verdictWord}</p>
+          <p class="verdict-total num" aria-label={`${s.total} out of ${TOTAL_MAX}`}>{s.total}<span>/{TOTAL_MAX}</span></p>
+        </div>
+        <p class="verdict-reason">{reason}</p>
+      </section>
+
+      <section class="section dims" aria-labelledby="dims-heading">
+        <h2 id="dims-heading" class="eyebrow">Dimensions</h2>
+        <ul class="dim-list">
+          {DIMENSION_KEYS.map((k) => {
+            const d = email.dimensions[k];
+            return (
+              <li class:list={['dim', { 'dim--cap': d.score === 1 && (k === 'trust' || k === 'technical_hygiene') }]}>
+                <span class="dim-name">{DIMENSIONS[k]}</span>
+                <Pips score={d.score} />
+                <span class="dim-source mono">{d.source}</span>
+                <p class="dim-note">{d.note}</p>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <section class="section" aria-labelledby="checks-heading">
+        <h2 id="checks-heading" class="eyebrow">Automated checks</h2>
+        {email.checks.length ? (
+          <ul class="checks">
+            {email.checks.map((c) => (
+              <li class:list={['check', `check--${c.result}`]}>
+                <span class="check-result mono">{c.result.toUpperCase()}</span>
+                <span class="check-name">{c.name}</span>
+                {c.detail && <span class="check-detail">{c.detail}</span>}
+              </li>
+            ))}
+          </ul>
+        ) : <p class="muted">No automated checks recorded for this send.</p>}
+      </section>
+
+      <p class="disagree">
+        Disagree with a score? Read <a href="/methodology/">how scores are made</a> or reply to the Monday email. Brands can request a rescore.
+      </p>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .sc-title { margin-top: 10px; }
+  .sc { display: flex; flex-wrap: wrap; gap: var(--gap); margin-top: 32px; align-items: flex-start; }
+  .sc-left { flex: 1 1 320px; min-width: 0; }
+  .sc-right { flex: 999 1 520px; min-width: 0; }
+
+  .meta { background: var(--surface); border: 1px solid var(--rule); }
+  .meta > div { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; padding: 14px 18px; border-top: 1px solid var(--rule-2); }
+  .meta > div:first-child { border-top: 0; }
+  .meta dt { padding-top: 3px; }
+  .meta dd { overflow-wrap: anywhere; }
+  .meta-subject { font-weight: 600; }
+  .meta .chips { gap: 6px; }
+  .meta .chip { min-height: 28px; padding: 2px 8px; }
+
+  .shot { margin-top: 16px; border: 1px solid var(--rule); background: var(--surface); }
+  .shot img { width: 100%; height: auto; }
+  .shot--empty { min-height: 360px; display: grid; place-items: center; background: var(--header-bg-2); border-style: dashed; border-color: var(--rule); }
+
+  .verdict { padding: 24px 28px 28px; }
+  .verdict-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 8px 24px; margin-top: 10px; }
+  .verdict-word { font-size: clamp(3rem, 2rem + 4vw, 5rem); }
+  .verdict-total { font-family: var(--font-mono); font-weight: 600; font-size: clamp(2.5rem, 2rem + 2vw, 3.5rem); line-height: 1; }
+  .verdict-total span { color: var(--on-dark-muted); font-size: 0.5em; }
+  .verdict-reason { margin-top: 14px; color: var(--on-dark-muted); }
+
+  .dims { margin-top: 32px; }
+  .dims h2, .section > h2.eyebrow { margin-bottom: 10px; }
+  .dim-list { list-style: none; padding: 0; background: var(--surface); border: 1px solid var(--rule); }
+  .dim { display: grid; grid-template-columns: minmax(0, 1fr) auto 84px; grid-template-areas: 'name pips source' 'note note note'; gap: 6px 16px; align-items: center; padding: 14px 18px; border-top: 1px solid var(--rule-2); }
+  .dim:first-child { border-top: 0; }
+  .dim-name { grid-area: name; font-weight: 600; }
+  .dim :global(.pips) { grid-area: pips; }
+  .dim-source { grid-area: source; font-size: 0.75rem; text-transform: uppercase; letter-spacing: var(--tracking); color: var(--muted); text-align: right; }
+  .dim-note { grid-area: note; font-size: var(--text-sm); color: var(--ink-2); }
+  .dim--cap .dim-name::after { content: ' · caps score'; font-family: var(--font-mono); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; color: var(--accent); }
+
+  .checks { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+  .check { background: var(--surface); border: 1px solid var(--rule); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+  .check-result { font-weight: 700; font-size: 0.8125rem; letter-spacing: var(--tracking); }
+  .check--pass .check-result { color: var(--strong-fg); }
+  .check--fail .check-result { color: var(--accent); }
+  .check--fail { border-color: var(--accent); }
+  .check-name { font-weight: 600; }
+  .check-detail { font-size: var(--text-sm); color: var(--ink-2); }
+
+  .disagree { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--ink-2); font-size: var(--text-sm); }
+</style>

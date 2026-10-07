@@ -1,0 +1,211 @@
+---
+// Built from the tracker content file alone. While `published: false` the
+// page still builds, but with noindex, a preview banner, and no nav or
+// sitemap entry (see astro.config.mjs and Header.astro).
+import type { GetStaticPaths } from 'astro';
+import Base from '../../layouts/Base.astro';
+import { industryLabel } from '../../config/industries';
+import { TOTAL_MAX } from '../../config/rubric';
+import { brandSlugs } from '../../lib/brands';
+import { getAllEmails, getTrackers } from '../../lib/content';
+import { dateRange, daysBetween, formatDateTimeMT, formatMedium, formatShort } from '../../lib/dates';
+import { median } from '../../lib/scoring';
+import type { Tracker } from '../../lib/schemas';
+
+export const getStaticPaths = (async () => {
+  const trackers = await getTrackers();
+  return trackers.map((t) => ({ params: { slug: t.data.slug }, props: { tracker: t.data } }));
+}) satisfies GetStaticPaths;
+
+interface Props { tracker: Tracker }
+const { tracker: t } = Astro.props;
+
+const knownBrands = new Set(brandSlugs(await getAllEmails()));
+const calendar = dateRange(t.start, t.end);
+const byDate = new Map(t.days.map((d) => [d.date, d]));
+const latest = [...t.days].sort((a, b) => a.date.localeCompare(b.date)).at(-1);
+const dayN = latest ? daysBetween(t.start, latest.date) + 1 : 0;
+const launched = latest?.launched_cumulative ?? 0;
+
+const brands = [...t.brands].sort((a, b) => a.first_mention.localeCompare(b.first_mention) || a.brand.localeCompare(b.brand));
+const earliest = brands[0];
+const discounts = t.brands.map((b) => b.discount).filter((d): d is number => d !== null);
+const medianDiscount = median(discounts);
+const bfSends = t.brands.reduce((n, b) => n + b.sends_since, 0);
+const bfAvg = bfSends ? t.brands.reduce((sum, b) => sum + b.avg_score * b.sends_since, 0) / bfSends : undefined;
+
+const signed = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n)}%`;
+
+// Black Friday is the day after the fourth Thursday of November.
+const year = Number(t.start.slice(0, 4));
+const nov1 = new Date(Date.UTC(year, 10, 1)).getUTCDay();
+const thanksgiving = 1 + ((4 - nov1 + 7) % 7) + 21;
+const bf = `${year}-11-${String(thanksgiving + 1).padStart(2, '0')}`;
+const cm = `${year}-11-${String(thanksgiving + 4).padStart(2, '0')}`;
+const axis = new Map<string, { top?: string; date: string }>([
+  [`${year}-11-01`, { date: 'Nov 1' }],
+  [`${year}-11-08`, { date: '8' }],
+  [`${year}-11-15`, { date: '15' }],
+  [`${year}-11-22`, { date: '22' }],
+  [bf, { top: 'BF', date: formatShort(bf) }],
+  [cm, { top: 'CM', date: formatShort(cm) }],
+]);
+
+const catMax = Math.max(1, ...t.categories.map((c) => Math.abs(c.sends_vs_baseline)));
+const categories = [...t.categories].sort((a, b) => b.sends_vs_baseline - a.sends_vs_baseline);
+const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatMedium(latest.date) : 'not yet';
+---
+<Base title={t.title} description={`${launched} of ${t.cohort_size} tracked brands have started Black Friday email. Updated daily.`} noindex={!t.published}>
+  {!t.published && (
+    <div class="banner" slot="banner" role="note">
+      <div class="wrap">Preview, not public. This page is excluded from the sitemap and navigation and marked noindex.</div>
+    </div>
+  )}
+
+  <p class="eyebrow num">{t.title} · Day {dayN} of {calendar.length} · Updated {updated}</p>
+  <h1 class="display bf-h1"><span class="accent">{launched} of {t.cohort_size}</span> brands have started Black Friday</h1>
+  {/* TODO(andrew): add one sentence defining what counts as "started" (first mention rule). */}
+  <p class="lede bf-lede">Cohort of {t.cohort_size} brands, frozen {formatMedium(t.cohort_frozen)}. Tracking runs {formatShort(t.start)} to {formatShort(t.end)}.</p>
+
+  <dl class="bf-stats">
+    <div class="card stat">
+      <dt class="eyebrow label">Earliest mention</dt>
+      <dd class="value">{earliest ? formatShort(earliest.first_mention) : 'None yet'}</dd>
+      {earliest && <dd class="stat-sub">{earliest.brand}</dd>}
+    </div>
+    <div class="card stat">
+      <dt class="eyebrow label">Sends vs. baseline</dt>
+      <dd class="value">{latest ? signed(latest.sends_vs_baseline) : 'n/a'}</dd>
+      {latest && <dd class="stat-sub">{latest.sends} sends on {formatShort(latest.date)}</dd>}
+    </div>
+    <div class="card stat">
+      <dt class="eyebrow label">Median headline discount</dt>
+      <dd class="value">{medianDiscount !== undefined ? `${medianDiscount}%` : 'n/a'}</dd>
+      <dd class="stat-sub">{discounts.length} of {t.brands.length} brands lead with a % off</dd>
+    </div>
+    <div class="card stat">
+      <dt class="eyebrow label">Avg score, BF sends</dt>
+      <dd class="value">{bfAvg !== undefined ? bfAvg.toFixed(1) : 'n/a'}<small>/{TOTAL_MAX}</small></dd>
+      {t.october_avg_score !== undefined && <dd class="stat-sub">vs. {t.october_avg_score.toFixed(1)} October average</dd>}
+    </div>
+  </dl>
+
+  <section class="section" aria-labelledby="launch-heading">
+    <div class="section-head">
+      <h2 id="launch-heading" class="display">Brands launched, cumulative</h2>
+      <p class="eyebrow">{t.cohort_size} brands in the cohort</p>
+    </div>
+    <div class="card chart-card">
+      <ol class="launch" aria-label="Brands launched per day">
+        {calendar.map((date) => {
+          const d = byDate.get(date);
+          return (
+            <li class:list={['launch-day', { future: !d }]}>
+              <span class="sr-only">{formatShort(date)}: {d ? `${d.launched_cumulative} of ${t.cohort_size} launched` : 'no data yet'}</span>
+              <span class="launch-bar" aria-hidden="true" style={d ? `height: ${(d.launched_cumulative / t.cohort_size) * 100}%` : undefined} />
+            </li>
+          );
+        })}
+      </ol>
+      <ol class="launch-axis eyebrow" aria-hidden="true">
+        {calendar.map((date, i) => {
+          const a = axis.get(date);
+          return (
+            <li class:list={{ marked: a?.top, last: i === calendar.length - 1 }}>
+              {a?.top && <span class="ax-top">{a.top}</span>}
+              {a && <span class="ax-date">{a.date}</span>}
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="first-heading">
+    <h2 id="first-heading" class="display">First mentions</h2>
+    <div class="table-scroll card">
+      <table class="bf-table">
+        <thead>
+          <tr><th scope="col">Brand</th><th scope="col">First mention</th><th scope="col">Headline discount</th><th scope="col">Sends since</th><th scope="col">Avg score</th></tr>
+        </thead>
+        <tbody>
+          {brands.map((b) => (
+            <tr>
+              <th scope="row">{knownBrands.has(b.brand_slug) ? <a href={`/brand/${b.brand_slug}/`}>{b.brand}</a> : b.brand}</th>
+              <td class="num">{formatShort(b.first_mention)}</td>
+              <td class="num">{b.discount !== null ? `${b.discount}%` : 'None'}</td>
+              <td class="num">{b.sends_since}</td>
+              <td class="num">{b.avg_score.toFixed(1)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="cat-heading">
+    <h2 id="cat-heading" class="display">Volume vs. baseline by category</h2>
+    <ul class="cats card">
+      {categories.map((c) => (
+        <li>
+          <span class="cat-name">{industryLabel(c.industry)}</span>
+          <span class="cat-track" aria-hidden="true"><span class="cat-bar" style={`width: ${(Math.max(0, c.sends_vs_baseline) / catMax) * 100}%`} /></span>
+          <span class="num cat-val">{signed(c.sends_vs_baseline)}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="section cta-band dark" aria-labelledby="bf-cta">
+    <div>
+      <p class="eyebrow">Watchlist</p>
+      <h2 id="bf-cta" class="display">Get an alert the day a brand you watch launches</h2>
+    </div>
+    <a class="btn btn--accent" href="/watchlist/">Join the Watchlist waitlist</a>
+  </section>
+</Base>
+
+<style>
+  .bf-h1 { margin-top: 14px; max-width: 18ch; }
+  .bf-lede { margin-top: 18px; }
+  .bf-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 32px; }
+  .bf-stats .stat { display: flex; flex-direction: column; }
+  .bf-stats .label { order: -1; margin-bottom: 6px; }
+  .stat-sub { margin-top: 6px; font-size: var(--text-sm); color: var(--muted); }
+
+  .chart-card { padding: 20px 20px 12px; }
+  .launch, .launch-axis { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 3px; }
+  .launch { height: 200px; border-bottom: 1px solid var(--ink); }
+  .launch-day { display: flex; align-items: flex-end; }
+  .launch-bar { width: 100%; background: var(--strong-fg); min-height: 2px; }
+  .launch-day.future .launch-bar { height: 6px; background: var(--rule); }
+  .launch-axis { margin-top: 8px; font-size: 0.6875rem; letter-spacing: 0.04em; }
+  .launch-axis li { white-space: nowrap; overflow: visible; display: flex; flex-direction: column; }
+  .launch-axis li.last { align-items: flex-end; }
+  .ax-top { font-weight: 600; color: var(--ink); }
+
+  .table-scroll { overflow-x: auto; padding: 0; margin-top: 16px; }
+  .bf-table { width: 100%; min-width: 620px; border-collapse: collapse; }
+  .bf-table th, .bf-table td { padding: 12px 16px; text-align: left; border-top: 1px solid var(--rule-2); }
+  .bf-table thead th { background: var(--header-bg-2); border-top: 0; font-family: var(--font-mono); font-size: var(--eyebrow); font-weight: 500; text-transform: uppercase; letter-spacing: var(--tracking); color: var(--muted); }
+  .bf-table tbody th { font-weight: 600; }
+  .bf-table tbody th a { display: inline-block; padding-block: 10px; margin-block: -10px; }
+
+  .cats { list-style: none; padding: 8px 20px; margin-top: 16px; }
+  .cats li { display: grid; grid-template-columns: 110px minmax(0, 1fr) 64px; gap: 14px; align-items: center; padding-block: 9px; border-top: 1px solid var(--rule-2); }
+  .cats li:first-child { border-top: 0; }
+  .cat-name { font-size: var(--text-sm); font-weight: 500; }
+  .cat-track { height: 16px; background: var(--header-bg-2); }
+  .cat-bar { display: block; height: 100%; background: var(--strong-fg); }
+  .cat-val { text-align: right; font-size: var(--text-sm); }
+
+  .cta-band { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px 40px; padding: 32px; margin-top: 56px; }
+  .cta-band h2 { margin-top: 8px; max-width: 22ch; }
+
+  @media (max-width: 520px) {
+    .launch, .launch-axis { gap: 1px; }
+    .launch { height: 150px; }
+    .launch-axis { font-size: 0.625rem; }
+    .launch-axis li.marked .ax-date { display: none; }
+  }
+</style>

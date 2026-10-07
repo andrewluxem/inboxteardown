@@ -1,0 +1,178 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Base from '../../layouts/Base.astro';
+import ScoreBadge from '../../components/ScoreBadge.astro';
+import { DIMENSIONS, DIMENSION_KEYS, SCORE_MAX, TOTAL_MAX } from '../../config/rubric';
+import { industryLabel } from '../../config/industries';
+import { SITE } from '../../config/site';
+import { brandSlugs, summarizeBrand, type BrandSummary } from '../../lib/brands';
+import { getAllEmails, getWindowEnd } from '../../lib/content';
+import { formatMedium, formatShort } from '../../lib/dates';
+
+export const getStaticPaths = (async () => {
+  const all = await getAllEmails();
+  const end = await getWindowEnd();
+  return brandSlugs(all)
+    .map((slug) => summarizeBrand(all, slug, end))
+    .filter((b): b is BrandSummary => b !== undefined)
+    .map((brand) => ({ params: { slug: brand.slug }, props: { brand } }));
+}) satisfies GetStaticPaths;
+
+interface Props { brand: BrandSummary }
+const { brand } = Astro.props;
+const industry = industryLabel(brand.industry);
+const kindLabel = { campaign: 'Campaign', welcome: 'Welcome', transactional: 'Transactional' } as const;
+const pct = (n: number, max: number) => `${((n / max) * 100).toFixed(1)}%`;
+---
+<Base title={brand.name} description={`${brand.name} marketing email scores for the last 30 days: ${brand.avgTotal.toFixed(1)}/${TOTAL_MAX} average, rank ${brand.rank} of ${brand.rankOf} in ${industry}.`}>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">Scoreboard</a></li>
+      <li>{industry}</li>
+      <li aria-current="page">{brand.name}</li>
+    </ol>
+  </nav>
+  <h1 class="display">{brand.name}</h1>
+  <p class="sub">
+    {industry} · Tracked since <span class="num">{formatMedium(brand.trackedSince)}</span> · Rank <span class="num">{brand.rank}</span> of <span class="num">{brand.rankOf}</span> in {industry} (30 days)
+  </p>
+
+  <dl class="stats brand-stats">
+    <div class="stat card"><dt class="eyebrow label">Average total</dt><dd class="value">{brand.avgTotal.toFixed(1)}<small>/{TOTAL_MAX}</small></dd></div>
+    <div class="stat card"><dt class="eyebrow label">Sends per week</dt><dd class="value">{brand.sendsPerWeek.toFixed(1)}</dd></div>
+    <div class="stat card"><dt class="eyebrow label">Hard fails</dt><dd class:list={['value', { accent: brand.hardFails > 0 }]}>{brand.hardFails}</dd></div>
+  </dl>
+
+  <section class="section" aria-labelledby="strip-heading">
+    <div class="section-head">
+      <h2 id="strip-heading" class="display">Last 30 days</h2>
+      <p class="eyebrow">{formatShort(brand.windowStart)} to {formatShort(brand.windowEnd)} · bar height = total out of {TOTAL_MAX}</p>
+    </div>
+    <div class="card strip-card">
+      <ol class="strip" aria-label="Sends per day, last 30 days">
+        {brand.strip.map((d) => (
+          <li class="strip-day">
+            <span class="sr-only">{formatShort(d.date)}: {d.sends.length ? d.sends.map((s) => `${kindLabel[s.email.kind]} scored ${s.total}`).join('; ') : 'no sends'}</span>
+            <span class="strip-bars" aria-hidden="true">
+              {d.sends.length
+                ? d.sends.map((s) => <span class:list={['bar', `bar--${s.email.kind}`, { 'bar--capped': s.capped }]} style={`height: ${pct(s.total, TOTAL_MAX)}`} title={`${formatShort(d.date)}: ${s.email.subject} (${s.total})`} />)
+                : <span class="dot" />}
+            </span>
+          </li>
+        ))}
+      </ol>
+      <div class="strip-axis eyebrow" aria-hidden="true"><span>{formatShort(brand.windowStart)}</span><span>{formatShort(brand.windowEnd)}</span></div>
+      <ul class="strip-legend" aria-label="Bar colors">
+        <li><span class="key key--campaign" aria-hidden="true"></span>Campaign</li>
+        <li><span class="key key--welcome" aria-hidden="true"></span>Welcome</li>
+        <li><span class="key key--transactional" aria-hidden="true"></span>Transactional</li>
+        <li><span class="dot" aria-hidden="true"></span>No sends</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="with-rail section">
+    <div class="main">
+      <section aria-labelledby="rubric-heading">
+        <div class="section-head">
+          <h2 id="rubric-heading" class="display">Rubric averages</h2>
+          <p class="eyebrow"><span class="tick-key" aria-hidden="true"></span> {industry} average</p>
+        </div>
+        <ul class="card rubric">
+          {DIMENSION_KEYS.map((k) => (
+            <li class="rubric-row">
+              <span class="rubric-name">{DIMENSIONS[k]}</span>
+              <span class="track" aria-hidden="true">
+                <span class="fill" style={`width: ${pct(brand.dimAvgs[k], SCORE_MAX)}`} />
+                <span class="tick" style={`left: ${pct(brand.industryDimAvgs[k], SCORE_MAX)}`} />
+              </span>
+              <span class="rubric-vals num">
+                {brand.dimAvgs[k].toFixed(1)} <span class="muted">vs {brand.industryDimAvgs[k].toFixed(1)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="section" aria-labelledby="recent-heading">
+        <h2 id="recent-heading" class="display">Recent sends</h2>
+        <ol class="recent card">
+          {brand.sends.map((s) => (
+            <li>
+              <a href={`/email/${s.email.id}/`} class="recent-link">
+                <span class="recent-date eyebrow">{formatShort(s.email.sendDate)} · {kindLabel[s.email.kind]}</span>
+                <span class="recent-subject">{s.email.subject}</span>
+              </a>
+              <ScoreBadge total={s.total} band={s.band} />
+            </li>
+          ))}
+        </ol>
+      </section>
+    </div>
+
+    <aside class="rail" aria-label="Themes and Watchlist">
+      <section class="card" aria-labelledby="themes-heading">
+        <h2 id="themes-heading" class="eyebrow">Themes, 30 days</h2>
+        <ul class="chips themes">
+          {brand.themes.map(([t, n]) => <li class="chip">{t}<span class="count num">{n}</span></li>)}
+        </ul>
+      </section>
+      <section class="card dark" aria-labelledby="wl-heading">
+        <p class="eyebrow">Watchlist</p>
+        <h2 id="wl-heading" class="display wl-title">Follow {brand.name}</h2>
+        <p class="muted">Free pages show {SITE.freeHistoryDays} days. Full history and alerts are in the Watchlist.</p>
+        <a class="btn btn--accent" href="/watchlist/">Join the Watchlist waitlist</a>
+      </section>
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .sub { margin-top: 14px; color: var(--ink-2); font-size: var(--text-lg); }
+  .brand-stats { margin-top: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .brand-stats .stat { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
+
+  .strip-card { padding: 20px 20px 16px; }
+  .strip { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 3px; height: 140px; border-bottom: 1px solid var(--rule); }
+  .strip-day { display: flex; align-items: flex-end; min-width: 0; }
+  .strip-bars { display: flex; align-items: flex-end; gap: 1px; width: 100%; height: 100%; justify-content: center; }
+  .bar { flex: 1 1 0; max-width: 18px; min-height: 2px; }
+  .bar--campaign, .key--campaign { background: var(--strong-fg); }
+  .bar--welcome, .key--welcome { background: var(--ink); }
+  .bar--transactional, .key--transactional { background: var(--surface); border: 2px solid var(--muted); }
+  .bar--capped { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .dot { width: 5px; height: 5px; background: var(--rule); margin-bottom: 4px; display: inline-block; }
+  .strip-axis { display: flex; justify-content: space-between; margin-top: 8px; }
+  .strip-legend { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 12px; font-size: var(--text-sm); color: var(--ink-2); }
+  .strip-legend li { display: flex; align-items: center; gap: 8px; }
+  .strip-legend .dot { margin: 0; }
+  .key { width: 12px; height: 12px; display: inline-block; }
+
+  .rubric { list-style: none; padding: 8px 20px; }
+  .rubric-row { display: grid; grid-template-columns: minmax(120px, 170px) minmax(0, 1fr) 96px; gap: 14px; align-items: center; padding-block: 10px; border-top: 1px solid var(--rule-2); }
+  .rubric-row:first-child { border-top: 0; }
+  .rubric-name { font-weight: 500; font-size: var(--text-sm); }
+  .track { position: relative; height: 14px; background: var(--header-bg-2); }
+  .fill { position: absolute; inset: 0 auto 0 0; background: var(--strong-fg); }
+  .tick { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1.5px; background: var(--ink); }
+  .tick-key { display: inline-block; width: 3px; height: 12px; background: var(--ink); vertical-align: -1px; margin-right: 4px; }
+  .rubric-vals { text-align: right; font-size: var(--text-sm); }
+
+  .recent { list-style: none; padding: 0 20px; margin-top: 16px; }
+  .recent li { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 12px; border-top: 1px solid var(--rule-2); }
+  .recent li:first-child { border-top: 0; }
+  .recent-link { display: flex; flex-direction: column; min-width: 0; text-decoration: none; min-height: var(--touch); justify-content: center; }
+  .recent-subject { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .recent-link:hover .recent-subject { text-decoration: underline; }
+  .themes { margin-top: 12px; }
+  .wl-title { font-size: 1.75rem; margin-top: 6px; }
+  .rail .btn { margin-top: 16px; }
+
+  @media (max-width: 520px) {
+    .strip { gap: 2px; height: 110px; }
+    .rubric-row { grid-template-columns: minmax(0, 1fr) 84px; grid-template-areas: 'name vals' 'track track'; gap: 6px 12px; }
+    .rubric-name { grid-area: name; }
+    .track { grid-area: track; }
+    .rubric-vals { grid-area: vals; }
+  }
+</style>

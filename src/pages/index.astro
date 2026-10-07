@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import Scoreboard from '../components/Scoreboard.astro';
+import EmailMiniCard from '../components/EmailMiniCard.astro';
+import TeardownRailCard from '../components/TeardownRailCard.astro';
+import SignupCard from '../components/SignupCard.astro';
+import HowScoresCard from '../components/HowScoresCard.astro';
+import { TOTAL_MAX } from '../config/rubric';
+import { getLatestDay, getTeardowns } from '../lib/content';
+import { formatLong, formatTimeMT } from '../lib/dates';
+import { average, bestAndWorst, rank } from '../lib/scoring';
+
+const day = await getLatestDay();
+const ranked = rank(day.emails);
+const { best, worst, worstIsCap } = bestAndWorst(day.emails);
+const teardown = (await getTeardowns())[0];
+
+// Server-rendered stats describe every row (the no-JS view). The filter
+// island recomputes them for the default "Campaigns only" view.
+const avg = average(ranked.map((s) => s.total));
+const fails = ranked.filter((s) => s.capped).length;
+---
+<Base description={`Every marketing email we received yesterday, scored out of ${TOTAL_MAX}. Updated each morning at 7:00 am MT.`}>
+  <div class="with-rail">
+    <div class="main">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Daily Scoreboard · {formatLong(day.date)} · {formatTimeMT(day.generated_at)}</p>
+          <h1 class="display">Yesterday's sends, scored</h1>
+        </div>
+        <dl class="stats hero-stats" aria-live="polite">
+          <div class="stat"><dt class="eyebrow label">Emails shown</dt><dd class="value" data-stat="count">{ranked.length}</dd></div>
+          <div class="stat"><dt class="eyebrow label">Average</dt><dd class="value"><span data-stat="avg">{avg.toFixed(1)}</span><small>/{TOTAL_MAX}</small></dd></div>
+          <div class="stat"><dt class="eyebrow label">Hard fails</dt><dd class="value accent" data-stat="fails">{fails}</dd></div>
+        </dl>
+      </header>
+
+      <div class="pair">
+        {best && <EmailMiniCard email={best.email} label="Best send yesterday" tone="best" />}
+        {worst && <EmailMiniCard email={worst.email} label={worstIsCap ? 'Hard fail yesterday' : 'Lowest score yesterday'} tone="fail" />}
+      </div>
+
+      <section class="section" aria-labelledby="board-heading">
+        <h2 id="board-heading" class="sr-only">All emails, ranked</h2>
+        <Scoreboard ranked={ranked} />
+      </section>
+    </div>
+
+    <aside class="rail" aria-label="More from Inbox Teardown">
+      <TeardownRailCard teardown={teardown} />
+      <SignupCard />
+      <HowScoresCard />
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .hero { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px 40px; }
+  .hero > div:first-child { flex: 1 1 400px; min-width: 0; }
+  .hero h1 { margin-top: 12px; font-size: clamp(2.375rem, 1.2rem + 4vw, 4.5rem); }
+  .hero-stats { gap: 28px; flex: none; }
+  @media (max-width: 520px) {
+    .hero-stats { gap: 20px; }
+    .hero-stats .value { font-size: 1.625rem; }
+  }
+  .hero-stats .stat { display: flex; flex-direction: column-reverse; }
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 36px; }
+</style>

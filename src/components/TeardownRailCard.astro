@@ -1,0 +1,20 @@
+---
+import { formatMedium } from '../lib/dates';
+import { teardownSlug, type TeardownEntry } from '../lib/content';
+
+interface Props { teardown?: TeardownEntry }
+const { teardown } = Astro.props;
+---
+{teardown && (
+  <section class="card dark" aria-labelledby="rail-teardown">
+    <p class="eyebrow">This week's teardown · No. {teardown.data.number}</p>
+    <h2 id="rail-teardown" class="display rail-title">{teardown.data.title}</h2>
+    <p class="muted">{teardown.data.dek}</p>
+    <p class="eyebrow">{formatMedium(teardown.data.date)} · {teardown.data.read_minutes} min read</p>
+    <a class="btn btn--accent" href={`/teardown/${teardownSlug(teardown)}/`}>Read the teardown</a>
+  </section>
+)}
+<style>
+  .rail-title { font-size: 2rem; margin-top: 8px; }
+  .btn { margin-top: 16px; }
+</style>
