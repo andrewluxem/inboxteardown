@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import { getPageHtml } from '../lib/content';
+
+const { page, html } = await getPageHtml('privacy');
+---
+<Base title={page.data.title} description={page.data.description}>
+  <div class="privacy">
+    <p class="eyebrow">Inbox Teardown</p>
+    <h1 class="display">{page.data.title}</h1>
+    <div class="prose section">
+      <Fragment set:html={html} />
+    </div>
+  </div>
+</Base>
+<style>
+  .privacy { max-width: 880px; }
+  .privacy h1 { margin-top: 12px; }
+</style>

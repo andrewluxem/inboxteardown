@@ -14,7 +14,7 @@ Every email on the scoreboard is scored on the same eight dimensions, listed abo
 
 <!-- TODO(andrew): define what a 1, 3, and 5 mean (scale anchors). Do not publish until these are written. -->
 
-[Scale anchors to be written.]
+[Scale anchors to be written]
 
 ## Bands
 
@@ -32,8 +32,10 @@ The rest is judgment. Each dimension on a scorecard is labeled with its source: 
 
 <!-- TODO(andrew): describe who or what makes the judgment calls, and how consistency is maintained. -->
 
-## Requesting a rescore
+## Corrections and rescores
 
-Brands can request a rescore. <!-- TODO(andrew): describe the rescore process: where to send the request, what to include, how long it takes, and whether rescores are noted publicly. -->
+To request a rescore or report an error, email {contactEmail} with the subject "Rescore request:" followed by the email's id. Each scorecard has a link that fills this in. When a score is corrected, the scorecard notes the correction and its date.
 
-[Rescore process to be written. Until then, reply to the Monday email.]
+Response time: [RESPONSE TIME]
+
+<!-- TODO(andrew): set the response time for rescore requests. -->

@@ -66,6 +66,10 @@ describe('content schemas reject other contract violations', () => {
   it('rejects an unknown kind', () => {
     expect(scoreboardSchema.safeParse(withEmail({ kind: 'newsletter' })).success).toBe(false);
   });
+  it('accepts a correction note and rejects a malformed one', () => {
+    expect(scoreboardSchema.safeParse(withEmail({ correction: { date: '2026-10-08', note: 'CTA link was fixed before send.' } })).success).toBe(true);
+    expect(scoreboardSchema.safeParse(withEmail({ correction: { date: 'yesterday', note: '' } })).success).toBe(false);
+  });
   it('rejects duplicate ids within a file', () => {
     expect(scoreboardSchema.safeParse({ ...good, emails: [good.emails[0], good.emails[0]] }).success).toBe(false);
   });
