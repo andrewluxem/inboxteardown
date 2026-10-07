@@ -1,11 +1,9 @@
 ---
-import { render } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import { CAPPING_DIMENSIONS, DIMENSIONS, DIMENSION_KEYS } from '../config/rubric';
-import { getPage } from '../lib/content';
+import { getPageHtml } from '../lib/content';
 
-const page = await getPage('methodology');
-const { Content } = await render(page);
+const { page, html } = await getPageHtml('methodology');
 ---
 <Base title="Methodology" description={page.data.description}>
   <div class="method">
@@ -27,7 +25,7 @@ const { Content } = await render(page);
     </section>
 
     <div class="prose section">
-      <Content />
+      <Fragment set:html={html} />
     </div>
   </div>
 </Base>

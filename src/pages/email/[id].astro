@@ -3,10 +3,11 @@ import type { GetStaticPaths } from 'astro';
 import Base from '../../layouts/Base.astro';
 import Pips from '../../components/Pips.astro';
 import { DIMENSIONS, DIMENSION_KEYS, BANDS, TOTAL_MAX } from '../../config/rubric';
+import { mailto } from '../../config/site';
 import { industryLabel } from '../../config/industries';
 import { getAllEmails } from '../../lib/content';
 import type { FlatEmail } from '../../lib/brands';
-import { formatDateTimeMT, formatLong } from '../../lib/dates';
+import { formatDateTimeMT, formatLong, formatMedium } from '../../lib/dates';
 import { cappingDimension, lowestDimension, score } from '../../lib/scoring';
 
 export const getStaticPaths = (async () => {
@@ -67,6 +68,9 @@ const reason = cap
           <p class="verdict-total num" aria-label={`${s.total} out of ${TOTAL_MAX}`}>{s.total}<span>/{TOTAL_MAX}</span></p>
         </div>
         <p class="verdict-reason">{reason}</p>
+        {email.correction && (
+          <p class="verdict-correction"><span class="mono">Corrected {formatMedium(email.correction.date)}:</span> {email.correction.note}</p>
+        )}
       </section>
 
       <section class="section dims" aria-labelledby="dims-heading">
@@ -102,7 +106,7 @@ const reason = cap
       </section>
 
       <p class="disagree">
-        Disagree with a score? Read <a href="/methodology/">how scores are made</a> or reply to the Monday email. Brands can request a rescore.
+        Disagree with a score? Read <a href="/methodology/">how scores are made</a> or reply to the Monday email. <a href={mailto(`Rescore request: ${email.id}`)}>Brands can request a rescore</a>.
       </p>
     </div>
   </div>
@@ -133,6 +137,8 @@ const reason = cap
   .verdict-total { font-family: var(--font-mono); font-weight: 600; font-size: clamp(2.5rem, 2rem + 2vw, 3.5rem); line-height: 1; }
   .verdict-total span { color: var(--on-dark-muted); font-size: 0.5em; }
   .verdict-reason { margin-top: 14px; color: var(--on-dark-muted); }
+  .verdict-correction { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ink-2); color: var(--on-dark); font-size: var(--text-sm); }
+  .verdict-correction .mono { color: var(--accent-on-dark); font-weight: 600; text-transform: uppercase; font-size: 0.8125rem; }
 
   .dims { margin-top: 32px; }
   .dims h2, .section > h2.eyebrow { margin-bottom: 10px; }
@@ -151,6 +157,7 @@ const reason = cap
   .check--pass .check-result { color: var(--strong-fg); }
   .check--fail .check-result { color: var(--accent); }
   .check--fail { border-color: var(--accent); }
+  .check--unverified .check-result { color: var(--muted); }
   .check-name { font-weight: 600; }
   .check-detail { font-size: var(--text-sm); color: var(--ink-2); }
 

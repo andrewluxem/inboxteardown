@@ -8,7 +8,9 @@ import { industryLabel } from '../../config/industries';
 import { TOTAL_MAX } from '../../config/rubric';
 import { brandSlugs } from '../../lib/brands';
 import { getAllEmails, getTrackers } from '../../lib/content';
-import { dateRange, daysBetween, formatDateTimeMT, formatMedium, formatShort } from '../../lib/dates';
+import { dateRange, formatDateTimeMT, formatMedium, formatShort } from '../../lib/dates';
+import { ogPath } from '../../lib/og';
+import { trackerProgress } from '../../lib/tracker';
 import { median } from '../../lib/scoring';
 import type { Tracker } from '../../lib/schemas';
 
@@ -23,9 +25,7 @@ const { tracker: t } = Astro.props;
 const knownBrands = new Set(brandSlugs(await getAllEmails()));
 const calendar = dateRange(t.start, t.end);
 const byDate = new Map(t.days.map((d) => [d.date, d]));
-const latest = [...t.days].sort((a, b) => a.date.localeCompare(b.date)).at(-1);
-const dayN = latest ? daysBetween(t.start, latest.date) + 1 : 0;
-const launched = latest?.launched_cumulative ?? 0;
+const { latest, dayN, launched } = trackerProgress(t);
 
 const brands = [...t.brands].sort((a, b) => a.first_mention.localeCompare(b.first_mention) || a.brand.localeCompare(b.brand));
 const earliest = brands[0];
@@ -55,7 +55,7 @@ const catMax = Math.max(1, ...t.categories.map((c) => Math.abs(c.sends_vs_baseli
 const categories = [...t.categories].sort((a, b) => b.sends_vs_baseline - a.sends_vs_baseline);
 const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatMedium(latest.date) : 'not yet';
 ---
-<Base title={t.title} description={`${launched} of ${t.cohort_size} tracked brands have started Black Friday email. Updated daily.`} noindex={!t.published}>
+<Base title={t.title} description={`${launched} of ${t.cohort_size} tracked brands have started Black Friday email. Updated daily.`} noindex={!t.published} ogImage={ogPath.tracker(t.slug)}>
   {!t.published && (
     <div class="banner" slot="banner" role="note">
       <div class="wrap">Preview, not public. This page is excluded from the sitemap and navigation and marked noindex.</div>

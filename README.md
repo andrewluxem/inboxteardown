@@ -4,8 +4,29 @@ The public, free-tier site for [inboxteardown.com](https://inboxteardown.com): a
 scoreboard, per-email scorecards, brand pages, a weekly teardown archive, a methodology page,
 and a Black Friday tracker that stays hidden until launch.
 
-Static Astro site. No client framework, no analytics, no third-party scripts. Every page reads
-fine with JavaScript off; JS only adds scoreboard filtering and the "signups open soon" message.
+Static Astro site. No client framework. Every page reads fine with JavaScript off; JS only adds
+scoreboard filtering, the "signups open soon" message, and analytics.
+
+## Analytics and third-party scripts
+
+Vercel Web Analytics is the only analytics. It is rendered once, in `src/layouts/Base.astro`,
+and loads its script from the site's own `/_vercel/insights/` path. No other analytics or
+third-party scripts are allowed. `npm run prelaunch` fails if any built page has a
+`<script src>` pointing anywhere but the site itself.
+
+## Site config
+
+`src/config/site.ts` holds the site URL (`https://www.inboxteardown.com`), contact address,
+email provider, indexing switch, and Watchlist price. `astro.config.mjs`, every page, the footer,
+the privacy and methodology pages, robots.txt, OG images, and the prelaunch check read from it.
+Markdown pages use `{contactEmail}` and `{emailProvider}` tokens, filled in from the config at build.
+
+## Open Graph images
+
+1200x630 PNGs are generated at build time by prerendered endpoints under `src/pages/og/`
+(satori + resvg, no runtime functions): a default site card, the scoreboard home, one per teardown,
+and one per tracker. Samples are in `docs/og-samples/`. The display face is Archivo Narrow 700,
+because satori cannot read WOFF2 or apply the variable font's width axis.
 
 ## Commands
 
@@ -19,6 +40,7 @@ Requires Node 22+.
 | `npm run preview` | Serve `dist/` locally |
 | `npm test` | Vitest unit tests (scoring, brand aggregation, schemas) |
 | `npm run check` | `astro check` type and template diagnostics |
+| `npm run prelaunch` | Launch gate over `src/` and `dist/` (run after build). Reports every failure, exits 1 if any rule fails |
 | `npm run screenshots` | Playwright screenshots into `docs/screenshots/` (run after build; first time: `npx playwright install chromium`) |
 
 ## Content contract (summary)
@@ -64,14 +86,21 @@ with `npm run screenshots` once real data exists.
 
 ## Pre-launch checklist
 
-- [ ] Remove the fixtures (see above) and add real scoreboard data.
-- [ ] Set `PUBLIC_SIGNUP_ENDPOINT` in the Vercel project env. Until then, forms show "Signups open soon".
-- [ ] Flip `public/robots.txt` to allow crawling (instructions are in the file).
-- [ ] Confirm the rubric dimension names in `src/config/rubric.ts` against `email-quality-rubric-client.md`.
-- [ ] Set the Watchlist price (`watchlistPrice` in `src/config/site.ts`).
-- [ ] Set the contact address (`contact` in `src/config/site.ts`).
-- [ ] Fill in the `TODO(andrew)` placeholders in `src/content/pages/methodology.md`.
-- [ ] Add a privacy policy page before collecting email addresses.
+`npm run build && npm run prelaunch` is the checklist. It must pass before launch. It fails on:
+
+- any third-party `<script src>` (only the site itself and Vercel's `/_vercel/insights/` path are allowed)
+- any `TODO(andrew)` in `src/`
+- bracketed placeholders such as `[PRICE]` or `[EMAIL PROVIDER]` in built pages
+- any fixture brand name in `src/content/` (remove the fixtures, see above)
+- `/privacy/` missing from the build
+- `PUBLIC_SIGNUP_ENDPOINT` unset at build time (set it in the Vercel project env)
+- robots.txt blocking everything (set `allowIndexing: true` in `src/config/site.ts`)
+- an indexable page without an `og:image`, or one pointing at a file that isn't built
+- a footer missing the contact address
+
+Not covered by the check:
+
+- [ ] Enable Web Analytics for the project in the Vercel dashboard (the script 404s until it is enabled).
 - [ ] When the tracker should go live, set `published: true` in `src/content/tracker/bf-2026.md`.
 
 Find remaining placeholders with `grep -rn "TODO(andrew)" src`.

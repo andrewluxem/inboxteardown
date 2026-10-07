@@ -42,11 +42,13 @@ export const dimensionsSchema = z.strictObject({
 
 export const checkSchema = z.strictObject({
   name: z.string().min(1),
-  result: z.enum(['pass', 'fail']),
+  // unverified: the check could not reach a verdict (403, 429, timeout, image-only
+  // footer). Rubric v1 never penalizes it, so it renders neutral.
+  result: z.enum(['pass', 'fail', 'unverified']),
   detail: z.string().optional(),
 });
 
-export const emailSchema = z.strictObject({
+const emailBase = z.strictObject({
   id: z.string().regex(SLUG, 'id must be lowercase, URL-safe (a-z, 0-9, hyphens)'),
   brand: z.string().min(1),
   brand_slug: z.string().regex(SLUG, 'brand_slug must be lowercase, URL-safe'),
@@ -58,11 +60,43 @@ export const emailSchema = z.strictObject({
   themes: z.array(z.string().min(1)).default([]),
   dimensions: dimensionsSchema,
   checks: z.array(checkSchema).default([]),
+  // A local path under /shots/ or an https URL (the public Blob store). Real
+  // screenshots go to Blob, never into git.
   screenshot: z
     .string()
-    .regex(/^\/shots\/[^\s]+$/, 'screenshot must be a path under /shots/ (files live in public/shots/)')
+    .regex(
+      /^(\/shots\/|https:\/\/)[^\s]+$/,
+      'screenshot must be a path under /shots/ or an https URL',
+    )
     .nullable()
     .default(null),
+  // Set when a score was changed after publication; shown on the scorecard.
+  correction: z
+    .strictObject({
+      date: isoDate,
+      note: z.string().min(1),
+    })
+    .optional(),
+});
+
+/**
+ * Hard-fail evidence gate. A 1 on a capping dimension (Trust, Technical
+ * hygiene) caps the email publicly, so it must be backed by at least one
+ * failed check with a non-empty detail. A cap with no evidence fails the build.
+ */
+export const emailSchema = emailBase.superRefine((e, ctx) => {
+  const capped = (['trust', 'technical_hygiene'] as const).filter((k) => e.dimensions[k].score === 1);
+  if (!capped.length) return;
+  const evidenced = e.checks.some((c) => c.result === 'fail' && (c.detail ?? '').trim().length > 0);
+  if (!evidenced) {
+    capped.forEach((k) =>
+      ctx.addIssue({
+        code: 'custom',
+        path: ['dimensions', k, 'score'],
+        message: `${k} is 1 (capped) but no failed check with a detail backs it`,
+      }),
+    );
+  }
 });
 
 export const scoreboardSchema = z
