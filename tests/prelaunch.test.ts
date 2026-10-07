@@ -13,10 +13,12 @@ import {
   scriptSrcs,
   thirdPartyScripts,
 } from '../scripts/prelaunch-rules.ts';
+import { SITE } from '../src/config/site.ts';
 
 const HOST = 'www.inboxteardown.com';
 const SITE_URL = `https://${HOST}`;
-const EMAIL = 'hello@inboxteardown.com';
+// The footer rule checks the configured contact address.
+const EMAIL = SITE.contactEmail;
 const page = (path: string, html: string) => ({ path, html });
 
 describe('script hosts', () => {
@@ -133,6 +135,12 @@ describe('og:image', () => {
 });
 
 describe('footer contact', () => {
+  it('checks for support@inboxteardown.com', () => {
+    expect(EMAIL).toBe('support@inboxteardown.com');
+  });
+  it('fails a footer that still shows the old address', () => {
+    expect(checkFooterContact([page('a.html', '<footer><a href="mailto:hello@inboxteardown.com">hello@inboxteardown.com</a></footer>')], EMAIL)).toHaveLength(1);
+  });
   it('passes when the footer links the contact address', () => {
     expect(checkFooterContact([page('a.html', `<footer><a href="mailto:${EMAIL}">${EMAIL}</a></footer>`)], EMAIL)).toEqual([]);
   });

@@ -4,7 +4,7 @@
 export const SITE = {
   name: 'Inbox Teardown',
   siteUrl: 'https://www.inboxteardown.com',
-  contactEmail: 'hello@inboxteardown.com',
+  contactEmail: 'support@inboxteardown.com',
   // TODO(andrew): name the email provider once chosen. While null, the privacy
   // page shows the [EMAIL PROVIDER] placeholder.
   emailProvider: null as string | null,
