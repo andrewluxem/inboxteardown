@@ -4,8 +4,15 @@ The public, free-tier site for [inboxteardown.com](https://inboxteardown.com): a
 scoreboard, per-email scorecards, brand pages, a weekly teardown archive, a methodology page,
 and a Black Friday tracker that stays hidden until launch.
 
-Static Astro site. No client framework, no analytics, no third-party scripts. Every page reads
-fine with JavaScript off; JS only adds scoreboard filtering and the "signups open soon" message.
+Static Astro site. No client framework. Every page reads fine with JavaScript off; JS only adds
+scoreboard filtering, the "signups open soon" message, and analytics.
+
+## Analytics and third-party scripts
+
+Vercel Web Analytics is the only analytics. It is rendered once, in `src/layouts/Base.astro`,
+and loads its script from the site's own `/_vercel/insights/` path. No other analytics or
+third-party scripts are allowed. `npm run prelaunch` fails if any built page has a
+`<script src>` pointing anywhere but the site itself.
 
 ## Commands
 
@@ -19,6 +26,7 @@ Requires Node 22+.
 | `npm run preview` | Serve `dist/` locally |
 | `npm test` | Vitest unit tests (scoring, brand aggregation, schemas) |
 | `npm run check` | `astro check` type and template diagnostics |
+| `npm run prelaunch` | Checks `dist/` for third-party `<script src>` (run after build; exits non-zero on failure) |
 | `npm run screenshots` | Playwright screenshots into `docs/screenshots/` (run after build; first time: `npx playwright install chromium`) |
 
 ## Content contract (summary)
@@ -71,7 +79,9 @@ with `npm run screenshots` once real data exists.
 - [ ] Set the Watchlist price (`watchlistPrice` in `src/config/site.ts`).
 - [ ] Set the contact address (`contact` in `src/config/site.ts`).
 - [ ] Fill in the `TODO(andrew)` placeholders in `src/content/pages/methodology.md`.
-- [ ] Add a privacy policy page before collecting email addresses.
+- [ ] Add a privacy policy page before collecting email addresses. It needs an Analytics section covering Vercel Web Analytics.
+- [ ] Enable Web Analytics for the project in the Vercel dashboard (the script 404s until it is enabled).
+- [ ] Run `npm run build && npm run prelaunch` and confirm it passes.
 - [ ] When the tracker should go live, set `published: true` in `src/content/tracker/bf-2026.md`.
 
 Find remaining placeholders with `grep -rn "TODO(andrew)" src`.
