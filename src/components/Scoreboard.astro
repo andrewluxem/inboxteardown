@@ -1,0 +1,139 @@
+---
+import ScoreBadge from './ScoreBadge.astro';
+import Legend from './Legend.astro';
+import { INDUSTRY_KEYS, industryLabel } from '../config/industries';
+import { DIMENSIONS } from '../config/rubric';
+import { cappingDimension, type Scored } from '../lib/scoring';
+import type { Email } from '../lib/schemas';
+
+interface Props { ranked: Scored<Email>[] }
+const { ranked } = Astro.props;
+
+const present = INDUSTRY_KEYS.filter((k) => ranked.some((s) => s.email.industry === k)).map((k) => ({
+  key: k,
+  label: industryLabel(k),
+  count: ranked.filter((s) => s.email.industry === k).length,
+}));
+
+function flagFor(s: Scored<Email>): string | undefined {
+  const parts: string[] = [];
+  const cap = cappingDimension(s.email);
+  if (cap) parts.push(`Capped: ${DIMENSIONS[cap]} scored 1`);
+  const failed = s.email.checks.filter((c) => c.result === 'fail').map((c) => c.name);
+  if (failed.length) parts.push(`Failed check: ${failed.join(', ')}`);
+  return parts.length ? parts.join(' · ') : undefined;
+}
+const kindLabel = { campaign: 'Campaign', welcome: 'Welcome', transactional: 'Transactional' } as const;
+---
+<div class="board-wrap" data-board>
+  <div class="filters" data-filters hidden>
+    <div class="chips-scroll">
+      <ul class="chips" aria-label="Filter by industry">
+        <li><button type="button" class="chip" aria-pressed="true" data-industry-filter="all">All</button></li>
+        {present.map((p) => (
+          <li><button type="button" class="chip" aria-pressed="false" data-industry-filter={p.key}>{p.label}</button></li>
+        ))}
+      </ul>
+    </div>
+    <button type="button" class="toggle" aria-pressed="true" data-campaigns-only>
+      <span class="toggle-box" aria-hidden="true"></span>
+      Campaigns only
+    </button>
+  </div>
+
+  <div class="board-scroll">
+    <div class="board">
+      <div class="board-head" aria-hidden="true">
+        <span>#</span><span>Brand</span><span>Industry</span><span>Subject</span><span>Type</span><span class="c-score">Score</span>
+      </div>
+      <ol class="board-rows" aria-label="Emails ranked by score">
+        {ranked.map((s, i) => {
+          const flag = flagFor(s);
+          return (
+            <li class="row" data-industry={s.email.industry} data-kind={s.email.kind} data-total={s.total} data-capped={String(s.capped)}>
+              <span class="c-rank num" data-rank>{i + 1}</span>
+              <span class="c-brand">{s.email.brand}<span class="c-industry-inline"> · {industryLabel(s.email.industry)}</span></span>
+              <span class="c-industry">{industryLabel(s.email.industry)}</span>
+              <span class="c-subject">
+                <a class="row-link" href={`/email/${s.email.id}/`}>{s.email.subject}</a>
+                {flag && <span class="flag">{flag}</span>}
+              </span>
+              <span class="c-type">{kindLabel[s.email.kind]}</span>
+              <span class="c-score"><ScoreBadge total={s.total} band={s.band} /></span>
+            </li>
+          );
+        })}
+      </ol>
+      <p class="board-empty" data-empty hidden>No emails match these filters.</p>
+    </div>
+  </div>
+  <Legend />
+</div>
+
+<script>
+  import { initScoreboardFilters } from '../scripts/scoreboard-filter';
+  initScoreboardFilters();
+</script>
+
+<style>
+  .filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-bottom: 16px; }
+  .chips-scroll { min-width: 0; flex: 1 1 400px; }
+  .toggle {
+    display: inline-flex; align-items: center; gap: 10px; min-height: var(--touch); padding: 0 4px;
+    background: none; border: 0; cursor: pointer; font-family: var(--font-mono); font-size: 0.8125rem; text-transform: uppercase; letter-spacing: var(--tracking);
+  }
+  .toggle-box { width: 36px; height: 20px; border: 2px solid var(--ink); position: relative; flex: none; }
+  .toggle-box::after { content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; background: var(--ink); }
+  .toggle[aria-pressed='true'] .toggle-box { background: var(--ink); }
+  .toggle[aria-pressed='true'] .toggle-box::after { left: 18px; background: var(--surface); }
+
+  .board-scroll { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); }
+  /* Spec said 860px; the main column is ~820px at 1280 beside the rail, so 860
+     clipped the score column at desktop. 800px fits and still scrolls on tablets. */
+  .board { min-width: 800px; }
+  .board-head, .row {
+    display: grid;
+    grid-template-columns: 32px minmax(124px, 1.1fr) 96px minmax(0, 3fr) 104px 84px;
+    gap: 0 16px; align-items: center; padding: 0 16px;
+  }
+  .board-head {
+    background: var(--header-bg-2); min-height: 40px;
+    font-family: var(--font-mono); font-size: var(--eyebrow); font-weight: 500; text-transform: uppercase; letter-spacing: var(--tracking); color: var(--muted);
+  }
+  .board-rows { list-style: none; padding: 0; margin: 0; }
+  .row { position: relative; min-height: 60px; padding-block: 10px; border-top: 1px solid var(--rule-2); }
+  .row:hover { background: var(--ground); }
+  .row:focus-within { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .row-link { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; font-weight: 500; }
+  .row-link:focus-visible { outline: none; }
+  .row-link::after { content: ''; position: absolute; inset: 0; }
+  .row:hover .row-link { text-decoration: underline; }
+  .c-subject { min-width: 0; }
+  .c-rank { color: var(--muted); }
+  .c-brand { font-weight: 600; }
+  .c-industry, .c-type { font-size: var(--text-sm); color: var(--ink-2); }
+  .c-industry-inline { display: none; }
+  .c-score { justify-self: end; }
+  .flag { display: block; margin-top: 2px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .board-empty { padding: 24px 16px; color: var(--muted); border-top: 1px solid var(--rule-2); }
+
+  @media (max-width: 640px) {
+    .chips-scroll { flex-basis: 100%; overflow-x: auto; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }
+    .chips-scroll .chips { flex-wrap: nowrap; width: max-content; }
+    .board-scroll { overflow: visible; border: 0; background: none; }
+    .board { min-width: 0; }
+    .board-head { display: none; }
+    .board-rows { display: flex; flex-direction: column; gap: 8px; }
+    .row {
+      grid-template-columns: 72px minmax(0, 1fr);
+      grid-template-areas: 'score brand' 'score subject';
+      gap: 2px 14px; padding: 12px; border: 1px solid var(--rule); background: var(--surface);
+    }
+    .c-rank, .c-industry, .c-type { display: none; }
+    .c-industry-inline { display: inline; font-weight: 400; color: var(--muted); }
+    .c-brand { grid-area: brand; font-size: var(--text-sm); }
+    .c-subject { grid-area: subject; }
+    .c-score { grid-area: score; justify-self: stretch; align-self: center; }
+    .c-score :global(.badge) { width: 100%; min-height: 44px; }
+  }
+</style>

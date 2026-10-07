@@ -1,0 +1,9 @@
+---
+import { SCORE_MAX } from '../config/rubric';
+
+interface Props { score: number }
+const { score } = Astro.props;
+---
+<span class="pips" role="img" aria-label={`${score} out of ${SCORE_MAX}`}>
+  {Array.from({ length: SCORE_MAX }, (_, i) => <span class:list={{ on: i < score }} />)}
+</span>

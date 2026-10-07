@@ -1,0 +1,35 @@
+---
+import { CURRENT_TRACKER, isTrackerPublished } from '../lib/content';
+
+const trackerHref = `/tracker/${CURRENT_TRACKER}/`;
+const showTracker = await isTrackerPublished();
+const items = [
+  { href: '/', label: 'Scoreboard', match: (p: string) => p === '/' || p.startsWith('/email/') || p.startsWith('/brand/') },
+  { href: '/teardown/', label: 'Teardown', match: (p: string) => p.startsWith('/teardown/') },
+  ...(showTracker ? [{ href: trackerHref, label: 'Tracker', match: (p: string) => p.startsWith('/tracker/') }] : []),
+  { href: '/methodology/', label: 'Methodology', match: (p: string) => p.startsWith('/methodology/') },
+  { href: '/watchlist/', label: 'Watchlist', match: (p: string) => p.startsWith('/watchlist/') },
+];
+const path = Astro.url.pathname;
+---
+<header class="site-header">
+  <div class="wrap">
+    <a class="wordmark" href="/" aria-label="Inbox Teardown, home">INBOX<span class="slash" aria-hidden="true">/</span>TEARDOWN</a>
+    <nav class="nav-desktop" aria-label="Primary">
+      <ul class="nav-list">
+        {items.map((i) => <li><a href={i.href} aria-current={i.match(path) ? 'page' : undefined}>{i.label}</a></li>)}
+      </ul>
+    </nav>
+    <details class="menu">
+      <summary aria-label="Menu">
+        <svg class="icon-open" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 5h18M2 11h18M2 17h18" /></svg>
+        <svg class="icon-close" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4l14 14M18 4L4 18" /></svg>
+      </summary>
+      <nav aria-label="Primary, mobile">
+        <ul class="nav-list">
+          {items.map((i) => <li><a href={i.href} aria-current={i.match(path) ? 'page' : undefined}>{i.label}</a></li>)}
+        </ul>
+      </nav>
+    </details>
+  </div>
+</header>

@@ -1,0 +1,42 @@
+---
+// Compact scorecard used in the best/worst pair and inside teardowns.
+import ScoreBadge from './ScoreBadge.astro';
+import { DIMENSIONS } from '../config/rubric';
+import { industryLabel } from '../config/industries';
+import { lowestDimension, score } from '../lib/scoring';
+import type { Email } from '../lib/schemas';
+
+interface Props {
+  email: Email;
+  label?: string;
+  /** 'best' draws a blue top rule, 'fail' a near-black one. */
+  tone?: 'best' | 'fail' | 'plain';
+  headingLevel?: 'h2' | 'h3';
+}
+const { email, label, tone = 'plain', headingLevel: H = 'h3' } = Astro.props;
+const s = score(email);
+const low = lowestDimension(email);
+---
+<article class:list={['mini', `mini--${tone}`]}>
+  {label && <p class="eyebrow">{label}</p>}
+  <div class="mini-top">
+    <H class="mini-brand"><a href={`/email/${email.id}/`}>{email.brand}</a></H>
+    <ScoreBadge total={s.total} band={s.band} />
+  </div>
+  <p class="mini-subject">"{email.subject}"</p>
+  <p class="mini-meta eyebrow">{industryLabel(email.industry)} · {email.kind}</p>
+  <p class="mini-note"><span class="mono mini-dim">{DIMENSIONS[low]} {email.dimensions[low].score}/5:</span> {email.dimensions[low].note}</p>
+</article>
+<style>
+  .mini { background: var(--surface); border: 1px solid var(--rule); padding: 20px 22px 22px; min-width: 0; }
+  .mini--best { border-top: 6px solid var(--strong-fg); }
+  .mini--fail { border-top: 6px solid var(--ink); }
+  .mini-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 8px; }
+  .mini-brand { font-family: var(--font-display); font-stretch: var(--display-stretch); font-weight: var(--display-weight); text-transform: uppercase; font-size: 1.75rem; line-height: 1; }
+  .mini-brand a { text-decoration: none; display: inline-block; padding-block: 8px; margin-block: -8px; }
+  .mini-brand a:hover { text-decoration: underline; }
+  .mini-subject { margin-top: 12px; font-size: 1.0625rem; font-weight: 500; overflow-wrap: anywhere; }
+  .mini-meta { margin-top: 6px; }
+  .mini-note { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--rule-2); font-size: var(--text-sm); color: var(--ink-2); }
+  .mini-dim { font-size: 0.8125rem; font-weight: 600; color: var(--ink); }
+</style>

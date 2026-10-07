@@ -27,7 +27,7 @@ export const BANDS = {
   strong: { label: 'Strong', range: '33-40', min: 33 },
   solid: { label: 'Solid', range: '24-32', min: 24 },
   weak: { label: 'Weak', range: 'under 24', min: 0 },
-  capped: { label: 'Capped', range: 'a 1 on Trust or Technical hygiene', min: 0 },
+  capped: { label: 'Capped', range: '(a 1 on Trust or Technical hygiene)', min: 0 },
 } as const;
 
 export type Band = keyof typeof BANDS;

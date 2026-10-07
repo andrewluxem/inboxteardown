@@ -1,0 +1,15 @@
+---
+import { BANDS, TOTAL_MAX, type Band } from '../config/rubric';
+
+interface Props {
+  total: number;
+  band: Band;
+  class?: string;
+}
+const { total, band, class: cls } = Astro.props;
+---
+<span class:list={['badge', `badge--${band}`, cls]} title={`${BANDS[band].label}: ${total} of ${TOTAL_MAX}`}>
+  {total}
+  {band === 'capped' ? <span class="tag" aria-hidden="true">CAP</span> : null}
+  <span class="sr-only">out of {TOTAL_MAX}, {BANDS[band].label}</span>
+</span>

@@ -1,0 +1,34 @@
+---
+import { SIGNUP_ENDPOINT } from '../config/site';
+
+interface Props {
+  /** Hidden `list` value sent with the signup. */
+  list?: string;
+  button?: string;
+  id?: string;
+}
+const { list = 'newsletter', button = 'Sign up', id = `signup-${list}` } = Astro.props;
+// Unset endpoint: JS shows "Signups open soon" inline; without JS the form
+// lands on a static page that says the same thing.
+const action = SIGNUP_ENDPOINT ?? '/signups-soon/';
+const method = SIGNUP_ENDPOINT ? 'post' : 'get';
+---
+<form class="signup" action={action} method={method} data-signup data-live={SIGNUP_ENDPOINT ? 'true' : 'false'}>
+  <input type="hidden" name="list" value={list} />
+  <div class="field">
+    <label for={`${id}-email`}>Email address</label>
+    <input id={`${id}-email`} type="email" name="email" autocomplete="email" required placeholder="you@company.com" />
+    <button class="btn btn--accent" type="submit">{button}</button>
+  </div>
+  <p class="form-status" role="status" aria-live="polite"></p>
+</form>
+<script>
+  for (const form of document.querySelectorAll<HTMLFormElement>('form[data-signup]')) {
+    if (form.dataset.live === 'true') continue;
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const status = form.querySelector<HTMLElement>('.form-status');
+      if (status) status.textContent = 'Signups open soon. Nothing was sent.';
+    });
+  }
+</script>

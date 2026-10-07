@@ -1,0 +1,17 @@
+---
+import { SITE } from '../config/site';
+---
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Scores are commentary on publicly received marketing email.</p>
+    <ul>
+      <li><a href="/methodology/">Methodology</a></li>
+      <li><a href="/teardown/rss.xml">RSS</a></li>
+      <!-- TODO(andrew): replace the contact placeholder in src/config/site.ts -->
+      <li><span class="footer-contact">Contact: {SITE.contact}</span></li>
+    </ul>
+  </div>
+</footer>
+<style>
+  .footer-contact { display: inline-flex; align-items: center; min-height: var(--touch); }
+</style>

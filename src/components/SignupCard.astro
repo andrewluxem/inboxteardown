@@ -1,0 +1,15 @@
+---
+import SignupForm from './SignupForm.astro';
+
+interface Props {
+  list?: string;
+  heading?: string;
+}
+const { list = 'newsletter', heading = 'Get the Monday teardown' } = Astro.props;
+---
+<section class="card" aria-labelledby={`signup-heading-${list}`}>
+  <p class="eyebrow">Free, weekly</p>
+  <h2 id={`signup-heading-${list}`} class="display" style="font-size: 1.75rem; margin-top: 6px;">{heading}</h2>
+  <p class="muted">One email each Monday: the week's teardown and the best and worst sends we scored.</p>
+  <SignupForm list={list} />
+</section>
