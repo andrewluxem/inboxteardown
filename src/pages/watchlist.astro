@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import SignupForm from '../components/SignupForm.astro';
+import { SITE } from '../config/site';
+
+const features = [
+  ['Pick up to 10 brands', 'Competitors, peers, or the brands you admire. Change them any time.'],
+  ['Weekly scored digest', 'Every send from your brands that week, with scores and notes.'],
+  ['Alerts', 'When a brand launches a promotion, when its send cadence spikes, and when it hard-fails.'],
+  ['Full history', 'Every scored send, not just the 30 days on free brand pages.'],
+  ['CSV export', 'Scores, dimensions, and checks for your brands, ready for a spreadsheet.'],
+];
+---
+<Base title="Watchlist" description="Track up to 10 brands' marketing email with a weekly scored digest, alerts, full history, and CSV export.">
+  <div class="with-rail">
+    <div class="main">
+      <p class="eyebrow">Watchlist · Waitlist open</p>
+      <h1 class="display wl-h1">Watch the brands you compete with</h1>
+      <p class="lede wl-lede">Free pages show 30 days of scores. The Watchlist keeps the full record for the brands you pick and tells you when something changes.</p>
+      <ol class="features">
+        {features.map(([title, body], i) => (
+          <li>
+            <span class="num feat-n">{String(i + 1).padStart(2, '0')}</span>
+            <div><h2 class="feat-title">{title}</h2><p class="muted">{body}</p></div>
+          </li>
+        ))}
+      </ol>
+    </div>
+    <aside class="rail" aria-label="Join the waitlist">
+      <section class="card dark" aria-labelledby="price-heading">
+        <p class="eyebrow">Price</p>
+        <p id="price-heading" class="price num">{SITE.watchlistPrice}<span>/mo</span></p>
+        <p class="muted">Join the waitlist and we will email you when the Watchlist opens.</p>
+        <SignupForm list="watchlist" button="Join the waitlist" />
+      </section>
+    </aside>
+  </div>
+</Base>
+<style>
+  .wl-h1 { margin-top: 12px; max-width: 14ch; }
+  .wl-lede { margin-top: 18px; }
+  .features { list-style: none; padding: 0; margin-top: 36px; border-top: 2px solid var(--ink); max-width: var(--measure); }
+  .features li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; padding-block: 18px; border-bottom: 1px solid var(--rule); }
+  .feat-n { color: var(--accent); font-weight: 600; padding-top: 2px; }
+  .feat-title { font-size: 1.125rem; margin-bottom: 4px; }
+  .price { font-family: var(--font-mono); font-weight: 600; font-size: 2.5rem; line-height: 1.1; margin-top: 6px; }
+  .price span { font-size: 0.5em; color: var(--on-dark-muted); }
+</style>

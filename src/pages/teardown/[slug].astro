@@ -1,0 +1,53 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import EmailMiniCard from '../../components/EmailMiniCard.astro';
+import SignupCard from '../../components/SignupCard.astro';
+import { getAllEmails, getTeardowns, teardownSlug, type TeardownEntry } from '../../lib/content';
+import { formatMedium } from '../../lib/dates';
+
+export const getStaticPaths = (async () => {
+  const teardowns = await getTeardowns();
+  return teardowns.map((t) => ({ params: { slug: teardownSlug(t) }, props: { teardown: t } }));
+}) satisfies GetStaticPaths;
+
+interface Props { teardown: TeardownEntry }
+const { teardown } = Astro.props;
+const { Content } = await render(teardown);
+const emails = await getAllEmails();
+const featured = teardown.data.featured_email_ids.map((id) => emails.find((e) => e.id === id)!);
+---
+<Base title={teardown.data.title} description={teardown.data.dek} ogType="article" noindex={teardown.data.draft}>
+  <article class="article">
+    <p class="eyebrow num">Teardown No. {teardown.data.number} · {formatMedium(teardown.data.date)} · {teardown.data.read_minutes} min read{teardown.data.draft && ' · Draft'}</p>
+    <h1 class="display">{teardown.data.title}</h1>
+    <p class="lede dek">{teardown.data.dek}</p>
+    <div class="prose body">
+      <Content />
+    </div>
+
+    {featured.length > 0 && (
+      <section class="featured" aria-labelledby="featured-heading">
+        <h2 id="featured-heading" class="eyebrow">Scorecards in this teardown</h2>
+        <div class="featured-grid">
+          {featured.map((e) => <EmailMiniCard email={e} />)}
+        </div>
+      </section>
+    )}
+
+    <div class="end-signup">
+      <SignupCard heading="Get the next one" />
+    </div>
+  </article>
+</Base>
+<style>
+  .article { max-width: 880px; }
+  .article h1 { margin-top: 14px; max-width: 16ch; }
+  .dek { margin-top: 18px; font-size: 1.3125rem; color: var(--ink); }
+  .body { margin-top: 32px; padding-top: 28px; border-top: 2px solid var(--ink); }
+  .featured { margin-top: 44px; max-width: var(--measure); }
+  .featured h2 { margin-bottom: 12px; }
+  .featured-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .end-signup { margin-top: 48px; max-width: var(--measure); }
+</style>

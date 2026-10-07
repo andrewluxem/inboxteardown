@@ -6,7 +6,7 @@ rubric_version: "1.0"
 rubric_date: "[RUBRIC DATE]"
 ---
 
-Every email on the scoreboard is scored on the same eight dimensions. Each dimension gets a whole number from 1 to 5, so a total runs from 8 to 40. The dimensions and their current names are listed below.
+Every email on the scoreboard is scored on the same eight dimensions, listed above. Each dimension gets a whole number from 1 to 5, so a total runs from 8 to 40.
 
 <!-- TODO(andrew): add one or two sentences per dimension describing what it measures, from email-quality-rubric-client.md. -->
 

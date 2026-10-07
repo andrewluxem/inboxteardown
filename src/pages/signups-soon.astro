@@ -1,0 +1,12 @@
+---
+// No-JS fallback for signup forms while PUBLIC_SIGNUP_ENDPOINT is unset.
+import Base from '../layouts/Base.astro';
+---
+<Base title="Signups open soon" noindex>
+  <div style="max-width: 760px; padding-block: 24px 64px;">
+    <p class="eyebrow">Signups</p>
+    <h1 class="display" style="margin-top: 12px;">Signups open soon</h1>
+    <p class="lede" style="margin-top: 18px;">Nothing was sent and your address was not stored. Check back shortly.</p>
+    <p style="margin-top: 28px;"><a class="btn" href="/">Back to the scoreboard</a></p>
+  </div>
+</Base>

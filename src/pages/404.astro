@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Not found" noindex>
+  <div class="nf">
+    <p class="eyebrow">Error 404</p>
+    <h1 class="display">This page bounced</h1>
+    <p class="lede">The address may be mistyped, or the email it pointed to has aged out of the 30-day window.</p>
+    <p class="nf-links"><a class="btn" href="/">Today's scoreboard</a> <a class="btn btn--ghost" href="/teardown/">Teardown archive</a></p>
+  </div>
+</Base>
+<style>
+  .nf { padding-block: 40px 80px; max-width: 760px; }
+  .nf h1 { margin-top: 12px; }
+  .nf .lede { margin-top: 18px; }
+  .nf-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+</style>
