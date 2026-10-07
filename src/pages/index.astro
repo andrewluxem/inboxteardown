@@ -9,6 +9,7 @@ import { TOTAL_MAX } from '../config/rubric';
 import { getLatestDay, getTeardowns } from '../lib/content';
 import { formatLong, formatTimeMT } from '../lib/dates';
 import { average, bestAndWorst, rank } from '../lib/scoring';
+import { ogPath } from '../lib/og';
 
 const day = await getLatestDay();
 const ranked = rank(day.emails);
@@ -20,7 +21,7 @@ const teardown = (await getTeardowns())[0];
 const avg = average(ranked.map((s) => s.total));
 const fails = ranked.filter((s) => s.capped).length;
 ---
-<Base description={`Every marketing email we received yesterday, scored out of ${TOTAL_MAX}. Updated each morning at 7:00 am MT.`}>
+<Base description={`Every marketing email we received yesterday, scored out of ${TOTAL_MAX}. Updated each morning at 7:00 am MT.`} ogImage={ogPath.home}>
   <div class="with-rail">
     <div class="main">
       <header class="hero">
