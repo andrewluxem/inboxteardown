@@ -9,7 +9,7 @@ Every email on the scoreboard is scored on the same eight dimensions, listed abo
 
 Each morning's scoreboard covers the marketing email our inbox received in the 24 hours ending just before 8 a.m. Mountain Time.
 
-These scores are pre-calibration. Rubric 1.0 is a first version: the level descriptions below have not yet been checked against a panel of human ratings, and they may be reworded once they are. [ANDREW: when is calibration planned, and will published scores be rescored after it?]
+These scores are pre-calibration. Rubric 1.0 is a first version: the level descriptions below have not yet been checked against a panel of human ratings, and they may be reworded once they are. Calibration is planned for after launch, and there is no date for it yet. Every published score keeps the rubric version it was scored under, and a published score is never changed silently.
 
 ## What each dimension measures
 
@@ -141,14 +141,13 @@ Some scored emails are not published on the scoreboard:
 
 - **Pending check review.** A check may cap Trust or Technical hygiene in public only after its failures on real emails have been reviewed by hand against the raw email. Until a check has passed that review, any email whose Trust or Technical hygiene score it would set is held back.
 - **A judgment of 1 with no check behind it**, as described under the hard-fail rule.
+- **Image-only emails.** An email made almost entirely of images cannot be judged from its text, so it is held back.
 - **Scoring did not finish**, for example because the email could not be fetched or rendered.
 
-[ANDREW: image-only emails. The brief says emails made almost entirely of images are withheld as not judgeable, but the scorer currently scores them: the model sees little or no text, and the live-text check caps Design & hierarchy at 2 and Technical hygiene at 3. Which should this page say, and should the scorer change?]
-
-[ANDREW: are held-back emails ever published later, once reviewed?]
+Held-back emails are not added to past boards later. Once a check passes review, it applies to boards from then on.
 
 ## Corrections and rescores
 
 To request a rescore or report an error, email {contactEmail} with the subject "Rescore request:" followed by the email's id. Each scorecard has a link that fills this in. When a score is corrected, the scorecard notes the correction and its date.
 
-Response time: [ANDREW: how quickly do rescore requests get a reply?]
+We reply to rescore requests within 3 business days.
