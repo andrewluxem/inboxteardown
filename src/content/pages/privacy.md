@@ -23,13 +23,13 @@ This site does not set cookies and does not store anything in your browser. The 
 
 The site uses Vercel Web Analytics, and no other analytics or third-party scripts. Its script is loaded from this site's own domain, and it reports page views to Vercel.
 
-[ANDREW: describe what Vercel Web Analytics collects and how long Vercel keeps it, from Vercel's privacy documentation.]
+Vercel Web Analytics uses no third-party cookies and records page views anonymously. To tell visitors apart, it uses a hash of the incoming request, which is discarded after 24 hours. For each page view it stores the time, the URL, the referrer, filtered query parameters, your location to the city level, and your operating system, browser and device type. See [Vercel's Web Analytics privacy documentation](https://vercel.com/docs/analytics/privacy-policy).
 
 ## Hosting
 
 The site is hosted on Vercel. As with any website, loading a page sends your browser's request, including your IP address, to the host.
 
-[ANDREW: does Vercel keep request logs for this site, and for how long?]
+Vercel processes that request data, including your IP address, to serve the site. See [Vercel's privacy notice](https://vercel.com/legal/privacy-notice).
 
 ## Unsubscribe and deletion
 
@@ -45,4 +45,4 @@ Questions about this page: {contactEmail}.
 
 ## Effective date
 
-[ANDREW: the date this policy takes effect]
+This policy takes effect on October 15, 2026.
