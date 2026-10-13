@@ -37,7 +37,7 @@ emails:                             # at least one
     checks:                            # optional, defaults to []
       - { name: "Links resolve", result: fail, detail: "1 of 9 links returns 404" }
       - { name: "Unsubscribe present", result: pass }
-    screenshot: null                   # or "/shots/<file>"; put the file in public/shots/
+    screenshot: null                   # or an https:// Blob URL (or "/shots/<file>" for fixtures)
     correction:                        # optional; set when a published score changes
       date: 2026-10-08
       note: "Technical hygiene raised from 1 to 3: the CTA link was fixed before most opens." 
@@ -48,13 +48,53 @@ Rules:
 
 - `score` is an integer from 1 to 5. `note` is a non-empty string. `source` is
   `check`, `judgment`, or `both`.
-- `checks[].result` is `pass` or `fail`; `detail` is optional.
+- `checks[].result` is `pass`, `fail`, or `unverified`; `detail` is optional.
+  Use `unverified` when a check could not reach a verdict (HTTP 403 or 429, a
+  timeout, a redirect with no Location header, an image-only footer). Rubric
+  v1 never lowers a score for it.
+- `screenshot` is `null`, a path under `/shots/`, or an `https://` URL. Real
+  screenshots live in the public Blob store and are referenced by URL, never
+  committed.
 - Subjects are rendered as text. Merge tags such as `{{FirstName}}` show
   literally, which is intended. Quote any subject that starts with `{`, `[`,
   `*`, `!`, or contains `: `.
 - `correction` is optional. When present, the scorecard shows "Corrected {date}: {note}" in the
   verdict block. Update the dimension scores themselves to the corrected values.
 - Unknown keys anywhere in an email fail the build.
+
+### Hard-fail evidence gate (standing rule)
+
+A score of 1 on `trust` or `technical_hygiene` caps the email publicly. The
+build rejects any such score unless the email has at least one check with
+`result: fail` and a non-empty `detail`.
+
+The schema can only confirm that evidence is present, not that it is correct.
+So there is a process rule too: any pipeline change that adds or alters a
+hard-fail path (a check that can force a 1) must have its output reviewed
+against raw evidence (status codes, headers, HTML) before that output goes
+into a PR. Oct 7 is the precedent: 17 of 19 sends hard-failed on checks that
+the evidence pull did not confirm.
+
+### Rubric v1 key mapping
+
+The content keys predate Rubric v1 and stay fixed. The pipeline's v1 slugs map
+onto them, and only the display names in `src/config/rubric.ts` changed.
+
+| Rubric v1 slug | Content key | Display name |
+|---|---|---|
+| `subject` | `subject_preheader` | Subject & preheader |
+| `clarity` | `offer_clarity` | Clarity |
+| `design` | `design_hierarchy` | Design & hierarchy |
+| `copy` | `copy_voice` | Copy & voice |
+| `cta` | `cta` | Call to action |
+| `relevance` | `personalization` | Relevance |
+| `trust` | `trust` | Trust |
+| `hygiene` | `technical_hygiene` | Technical hygiene |
+
+Each dimension `note` is the one line of evidence the rubric requires: a quote
+from the email or the deciding check's output. `source` is `check` when a
+check ceiling set the score, `judgment` when Jev did, `both` when Jev scored
+at a ceiling a check set.
 
 ### Industries
 
