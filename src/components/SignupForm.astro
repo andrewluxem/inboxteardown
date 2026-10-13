@@ -12,6 +12,9 @@ const { list = 'newsletter', button = 'Sign up', id = `signup-${list}` } = Astro
 // lands on a static page that says the same thing.
 const action = SIGNUP_ENDPOINT ?? '/signups-soon/';
 const method = SIGNUP_ENDPOINT ? 'post' : 'get';
+const note = list === 'watchlist'
+  ? "We'll email you when the Watchlist opens."
+  : "We'll send the weekly teardown, starting with the first issue. Unsubscribe anytime.";
 ---
 <form class="signup" action={action} method={method} data-signup data-live={SIGNUP_ENDPOINT ? 'true' : 'false'}>
   <input type="hidden" name="list" value={list} />
@@ -26,7 +29,7 @@ const method = SIGNUP_ENDPOINT ? 'post' : 'get';
     <button class="btn btn--accent" type="submit">{button}</button>
   </div>
   <p class="form-status" role="status" aria-live="polite"></p>
-  <p class="form-note">We'll send the weekly Teardown. Unsubscribe anytime. <a href="/privacy/">Privacy</a>.</p>
+  <p class="form-note">{note} <a href="/privacy/">Privacy</a>.</p>
 </form>
 <style>
   .form-note { margin-top: 10px; font-size: 0.8125rem; color: var(--muted); }
