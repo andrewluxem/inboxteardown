@@ -3,31 +3,41 @@ title: "Privacy"
 description: "What Inbox Teardown collects when you sign up, who stores it, and how to unsubscribe or ask for deletion."
 ---
 
-<!-- TODO(andrew): review this whole page before launch. It states only the facts given so far; every gap is marked. -->
-
 ## What we collect
 
-When you sign up, we collect the email address you submit and which list you joined: the newsletter or the Watchlist waitlist.
+When you sign up, the form sends two things: the email address you type in, and which list you joined (the newsletter or the Watchlist waitlist). There are no other form fields.
 
-<!-- TODO(andrew): list anything else collected at signup or by the provider (for example, timestamps or IP address), if applicable. -->
+Until signups open, the form sends nothing anywhere. Submitting it only shows a "Signups open soon" message.
+
+[ANDREW: does the email provider record anything else at signup, such as the signup time, IP address, or a confirmation click? List it here once the provider is chosen.]
 
 ## Who stores it
 
 Signups are stored by {emailProvider}.
 
-<!-- TODO(andrew): name the email provider (set emailProvider in src/config/site.ts) and link to its privacy policy. -->
+[ANDREW: link to the provider's privacy policy once it is named.]
+
+## Cookies
+
+This site does not set cookies and does not store anything in your browser. The fonts are served from this site, not from a font service.
 
 ## Analytics
 
-The site uses Vercel Web Analytics.
+The site uses Vercel Web Analytics, and no other analytics or third-party scripts. Its script is loaded from this site's own domain, and it reports page views to Vercel.
 
-<!-- TODO(andrew): describe what Vercel Web Analytics collects and how it handles that data, from Vercel's privacy documentation. -->
+[ANDREW: describe what Vercel Web Analytics collects and how long Vercel keeps it, from Vercel's privacy documentation.]
+
+## Hosting
+
+The site is hosted on Vercel. As with any website, loading a page sends your browser's request, including your IP address, to the host.
+
+[ANDREW: does Vercel keep request logs for this site, and for how long?]
 
 ## Unsubscribe and deletion
 
 Every email we send has an unsubscribe link. To have your address deleted, email {contactEmail}.
 
-<!-- TODO(andrew): state how quickly deletion requests are handled. -->
+[ANDREW: how quickly are deletion requests handled?]
 
 ## About the emails we score
 
@@ -39,6 +49,4 @@ Questions about this page: {contactEmail}.
 
 ## Effective date
 
-[EFFECTIVE DATE]
-
-<!-- TODO(andrew): set the effective date. -->
+[ANDREW: the date this policy takes effect]
