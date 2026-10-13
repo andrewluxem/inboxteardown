@@ -1,7 +1,8 @@
 // Receives the site's signup form (src/components/SignupForm.astro): a native
 // urlencoded POST with `email`, `list` and the `website` honeypot. The browser
 // navigates here, so every outcome a real visitor can hit is a 303 back to
-// the site; only a disallowed origin gets a bare 403.
+// the site (?signup=invalid or ?signup=error on the form's page when it did
+// not work); only a disallowed origin gets a bare 403.
 //
 // Deployed with --no-verify-jwt: the form has no Supabase key to send.
 
@@ -99,25 +100,32 @@ Deno.serve(async (req) => {
   let sourcePage: string | null = null;
   if (referer && originOf(referer) === origin) sourcePage = new URL(referer).pathname.slice(0, 512);
 
+  // Back to the form's page; the form shows a message for ?signup=<outcome>.
+  const back = (outcome: 'invalid' | 'error') =>
+    redirect(`${origin}${sourcePage ?? '/'}?signup=${outcome}#signup-${list}-email`, origin);
+
   const email = (form.get('email') ?? '').trim().toLowerCase();
-  if (email.length > 254 || !EMAIL.test(email)) {
-    return redirect(`${origin}${sourcePage ?? '/'}?signup=invalid#signup-${list}-email`, origin);
-  }
+  if (email.length > 254 || !EMAIL.test(email)) return back('invalid');
 
   // Duplicate (email, list) is ignored, so new and repeat signups look the same.
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/inboxteardown_signups?on_conflict=email,list`, {
-    method: 'POST',
-    headers: {
-      apikey: SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-      'Content-Type': 'application/json',
-      Prefer: 'resolution=ignore-duplicates,return=minimal',
-    },
-    body: JSON.stringify({ email, list, source_page: sourcePage, consent_at: new Date().toISOString() }),
-  });
-  if (!res.ok) {
-    console.error('insert failed', res.status, await res.text());
-    return text(500, 'Signup failed. Please try again later.', corsHeaders(origin));
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/inboxteardown_signups?on_conflict=email,list`, {
+      method: 'POST',
+      headers: {
+        apikey: SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=ignore-duplicates,return=minimal',
+      },
+      body: JSON.stringify({ email, list, source_page: sourcePage, consent_at: new Date().toISOString() }),
+    });
+    if (!res.ok) {
+      console.error('insert failed', res.status, await res.text());
+      return back('error');
+    }
+  } catch (err) {
+    console.error('insert failed', err);
+    return back('error');
   }
   return redirect(signedUp, origin);
 });

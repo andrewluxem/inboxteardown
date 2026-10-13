@@ -38,12 +38,16 @@ const note = list === 'watchlist'
   .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 </style>
 <script>
-  // The endpoint redirects back with ?signup=invalid when the address fails validation.
-  const invalid = new URLSearchParams(location.search).get('signup') === 'invalid';
+  // The endpoint redirects back with ?signup=invalid or ?signup=error when a signup did not go through.
+  const outcomes: Record<string, string> = {
+    invalid: "That email address doesn't look right.",
+    error: 'Something went wrong. Please try again in a minute.',
+  };
+  const message = outcomes[new URLSearchParams(location.search).get('signup') ?? ''];
   for (const form of document.querySelectorAll<HTMLFormElement>('form[data-signup]')) {
     if (form.dataset.live === 'true') {
       const status = form.querySelector<HTMLElement>('.form-status');
-      if (invalid && status) status.textContent = "That email address doesn't look right.";
+      if (message && status) status.textContent = message;
       continue;
     }
     form.addEventListener('submit', (event) => {
