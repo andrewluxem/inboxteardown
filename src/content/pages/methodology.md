@@ -92,18 +92,63 @@ A total of 33 to 40 is **Strong**, 24 to 32 is **Solid**, and anything under 24 
 
 A score of 1 on **Trust** or on **Technical hygiene** caps the email, whatever its total. A capped email is listed after every non-capped email on the scoreboard and is labeled Capped instead of with a band.
 
+A 1 on either of these is published only when a failed automated check backs it, and the scorecard shows that check with its evidence. A judgment alone never caps an email: if the model rates Trust a 1 and no check confirms it, the email is held back for review instead of published.
+
 ## Checks and judgment
 
-Some of the score comes from deterministic checks that give the same answer every time: whether links resolve, whether an unsubscribe link is present, whether merge tags rendered. Each scorecard lists these under Automated checks with a pass or fail result.
+Some of the score comes from automated checks that give the same answer every time. Each scorecard lists them under Automated checks with one of three results: **pass**, **fail**, or **unverified**. Unverified means the check could not reach a verdict, for example because a website blocked the request or timed out. An unverified result never lowers a score.
 
-The rest is judgment. Each dimension on a scorecard is labeled with its source: CHECK when it comes from automated checks alone, JUDGMENT when a reviewer scored it, and BOTH when checks inform a reviewer's score.
+The rest is judgment, made by an AI language model. It reads the email's visible text line by line, along with measurements from a phone-sized rendering of the email: where the main button sits, font sizes, and how much of the email is live text rather than images. It does not look at the images themselves. For each dimension it picks one of the five written levels above and names the line of the email that supports it.
 
-<!-- TODO(andrew): describe who or what makes the judgment calls, and how consistency is maintained. -->
+Consistency comes from three things. Every email gets the same instructions and the same level descriptions. Those instructions change only when the rubric version changes. And each answer is stored, so scoring the same email again gives the same result.
+
+Each dimension on a scorecard is labeled with its source: CHECK when automated checks alone set it, JUDGMENT when the model's level set it, and BOTH when the model scored it and a check limited the score.
+
+## Check ceilings
+
+A failed check does not subtract points. It sets the highest score a dimension can get, and the dimension's score is the lower of the model's level and that ceiling. When several checks fail on one dimension, the lowest ceiling applies.
+
+| Check | Dimension | Ceiling when it fails |
+|---|---|---|
+| The main button's link is broken | Technical hygiene | 1 |
+| The sender fails DMARC alignment | Technical hygiene | 1 |
+| The HTML is over 102KB, so Gmail clips it | Technical hygiene | 2 |
+| The sending domain has no DMARC record | Technical hygiene | 3 |
+| Other links in the email are broken | Technical hygiene | 3 |
+| More than half the content images lack alt text | Technical hygiene | 3 |
+| Fewer than 50 words of live text | Technical hygiene | 3 |
+| There is no plain-text version | Technical hygiene | 4 |
+| The subject starts with a fake "RE:" or "FW:" | Trust | 1 |
+| No unsubscribe link in the body | Trust | 1 |
+| No postal address | Trust | 2 |
+| An unsubscribe header without one-click unsubscribe | Trust | 3 |
+| Fewer than 50 words of live text | Design & hierarchy | 2 |
+| The email is wider than a phone screen | Design & hierarchy | 2 |
+| The main button is below the first phone screen | Design & hierarchy | 3 |
+| Several buttons compete to be the main one | Design & hierarchy | 3 |
+| Body text is smaller than 13px on a phone | Design & hierarchy | 3 |
+| The preheader is template text, such as "View in browser" | Subject & preheader | 2 |
+| Unfilled merge fields, such as `{{FirstName}}` | Relevance | 1 |
+| One confirmed typo (two or more: ceiling 3) | Copy & voice | 4 |
+
+A link counts as broken only when it fails for certain on two separate tries: the page is gone (HTTP 404 or 410) or the domain does not exist. Server errors, timeouts, and sites that block automated requests are recorded as unverified. Links are checked when the email is scored, the morning after it arrives, not at the moment it was sent.
+
+Typos are flagged by a spell checker and count only after the model confirms they are real errors rather than brand or product names.
+
+## When an email is held back
+
+Some scored emails are not published on the scoreboard:
+
+- **Pending check review.** A check may cap Trust or Technical hygiene in public only after its failures on real emails have been reviewed by hand against the raw email. Until a check has passed that review, any email whose Trust or Technical hygiene score it would set is held back.
+- **A judgment of 1 with no check behind it**, as described under the hard-fail rule.
+- **Scoring did not finish**, for example because the email could not be fetched or rendered.
+
+[ANDREW: image-only emails. The brief says emails made almost entirely of images are withheld as not judgeable, but the scorer currently scores them: the model sees little or no text, and the live-text check caps Design & hierarchy at 2 and Technical hygiene at 3. Which should this page say, and should the scorer change?]
+
+[ANDREW: are held-back emails ever published later, once reviewed?]
 
 ## Corrections and rescores
 
 To request a rescore or report an error, email {contactEmail} with the subject "Rescore request:" followed by the email's id. Each scorecard has a link that fills this in. When a score is corrected, the scorecard notes the correction and its date.
 
-Response time: [RESPONSE TIME]
-
-<!-- TODO(andrew): set the response time for rescore requests. -->
+Response time: [ANDREW: how quickly do rescore requests get a reply?]
