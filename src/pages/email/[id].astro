@@ -3,7 +3,7 @@ import type { GetStaticPaths } from 'astro';
 import Base from '../../layouts/Base.astro';
 import Pips from '../../components/Pips.astro';
 import { DIMENSIONS, DIMENSION_KEYS, BANDS, TOTAL_MAX } from '../../config/rubric';
-import { mailto } from '../../config/site';
+import { SITE, mailto } from '../../config/site';
 import { industryLabel } from '../../config/industries';
 import { checkLabel } from '../../lib/checks';
 import { getAllEmails } from '../../lib/content';
@@ -107,7 +107,7 @@ const reason = cap
       </section>
 
       <p class="disagree">
-        Disagree with a score? Read <a href="/methodology/">how scores are made</a> or reply to the Monday email. <a href={mailto(`Rescore request: ${email.id}`)}>Brands can request a rescore</a>.
+        Disagree with a score? Read <a href="/methodology/">how scores are made</a> or email <a href={mailto(`Rescore request: ${email.id}`)}>{SITE.contactEmail}</a> to request a rescore.
       </p>
     </div>
   </div>
