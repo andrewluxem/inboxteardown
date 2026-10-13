@@ -5,6 +5,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { SITE, SITE_HOST } from '../src/config/site.ts';
 import {
+  checkAndrewMarkers,
   checkFixtureBrands,
   checkFooterContact,
   checkOgImages,
@@ -47,6 +48,7 @@ const rules: [string, Failure[]][] = [
   ['No third-party scripts (only the site and Vercel insights)', checkScriptHosts(pages, SITE_HOST)],
   ['No TODO(andrew) left in src/', checkTodos(srcFiles)],
   ['No bracketed placeholders in built pages', checkPlaceholders(pages)],
+  ['No [ANDREW: ...] markers in src/ or built pages', checkAndrewMarkers(srcFiles, pages)],
   ['No fixture brands in src/content/', checkFixtureBrands(contentFiles)],
   ['Privacy page is built', checkPrivacyPage(pages)],
   ['PUBLIC_SIGNUP_ENDPOINT set at build time', checkSignupEndpoint(pages)],
