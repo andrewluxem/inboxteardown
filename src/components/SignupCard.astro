@@ -10,6 +10,6 @@ const { list = 'newsletter', heading = 'Get the weekly teardown' } = Astro.props
 <section class="card" aria-labelledby={`signup-heading-${list}`}>
   <p class="eyebrow">Free, weekly</p>
   <h2 id={`signup-heading-${list}`} class="display" style="font-size: 1.75rem; margin-top: 6px;">{heading}</h2>
-  <p class="muted">One email a week: the week's teardown and the best and worst sends we scored, starting with the first issue.</p>
+  <p class="muted">One email a week with the teardown and the best and worst sends we scored. The first issue is coming soon.</p>
   <SignupForm list={list} />
 </section>
