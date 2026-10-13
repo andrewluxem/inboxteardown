@@ -5,17 +5,15 @@ description: "What Inbox Teardown collects when you sign up, who stores it, and 
 
 ## What we collect
 
-When you sign up, the form sends two things: the email address you type in, and which list you joined (the newsletter or the Watchlist waitlist). There are no other form fields.
+When you sign up, the form sends two things: the email address you type in, and which list you joined (the newsletter or the Watchlist waitlist). There are no other fields to fill in. The form also has a hidden field that only spam bots fill in; it is empty when you submit.
 
 Until signups open, the form sends nothing anywhere. Submitting it only shows a "Signups open soon" message.
 
-[ANDREW: does the email provider record anything else at signup, such as the signup time, IP address, or a confirmation click? List it here once the provider is chosen.]
+With your signup we also record the time you signed up and the page you signed up from (its path, without any query string). We do not store your IP address with your signup, and there is no confirmation email to click.
 
 ## Who stores it
 
-Signups are stored by {emailProvider}.
-
-[ANDREW: link to the provider's privacy policy once it is named.]
+Signups are stored by {emailProvider}, in a database table that only this site's signup service can read or write. See [Supabase's privacy policy](https://supabase.com/privacy).
 
 ## Cookies
 
@@ -35,9 +33,7 @@ The site is hosted on Vercel. As with any website, loading a page sends your bro
 
 ## Unsubscribe and deletion
 
-Every email we send has an unsubscribe link. To have your address deleted, email {contactEmail}.
-
-[ANDREW: how quickly are deletion requests handled?]
+To unsubscribe or to have your address deleted, email {contactEmail}. We handle unsubscribe and deletion requests within 30 days.
 
 ## About the emails we score
 
