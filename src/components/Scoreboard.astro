@@ -3,6 +3,7 @@ import ScoreBadge from './ScoreBadge.astro';
 import Legend from './Legend.astro';
 import { INDUSTRY_KEYS, industryLabel } from '../config/industries';
 import { DIMENSIONS } from '../config/rubric';
+import { checkLabel } from '../lib/checks';
 import { cappingDimension, type Scored } from '../lib/scoring';
 import type { Email } from '../lib/schemas';
 
@@ -19,7 +20,7 @@ function flagFor(s: Scored<Email>): string | undefined {
   const parts: string[] = [];
   const cap = cappingDimension(s.email);
   if (cap) parts.push(`Capped: ${DIMENSIONS[cap]} scored 1`);
-  const failed = s.email.checks.filter((c) => c.result === 'fail').map((c) => c.name);
+  const failed = s.email.checks.filter((c) => c.result === 'fail').map((c) => checkLabel(c.name));
   if (failed.length) parts.push(`Failed check: ${failed.join(', ')}`);
   return parts.length ? parts.join(' · ') : undefined;
 }

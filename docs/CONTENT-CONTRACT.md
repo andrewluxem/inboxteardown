@@ -35,8 +35,8 @@ emails:                             # at least one
       trust:             { score: 4, note: "...", source: both }
       technical_hygiene: { score: 1, note: "...", source: check }
     checks:                            # optional, defaults to []
-      - { name: "Links resolve", result: fail, detail: "1 of 9 links returns 404" }
-      - { name: "Unsubscribe present", result: pass }
+      - { name: secondary_links_resolve, result: fail, detail: "1 of 9 links returns 404" }
+      - { name: unsubscribe_link_in_body, result: pass }
     screenshot: null                   # or an https:// Blob URL (or "/shots/<file>" for fixtures)
     correction:                        # optional; set when a published score changes
       date: 2026-10-08

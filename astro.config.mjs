@@ -19,7 +19,7 @@ function unpublishedTrackerPaths() {
     .map((fm) => `/tracker/${fm.slug}/`);
 }
 
-const hidden = ['/signups-soon/', ...unpublishedTrackerPaths()];
+const hidden = ['/signups-soon/', '/signed-up/', ...unpublishedTrackerPaths()];
 
 export default defineConfig({
   site: SITE.siteUrl,
