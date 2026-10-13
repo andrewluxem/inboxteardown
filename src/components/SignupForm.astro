@@ -15,6 +15,11 @@ const method = SIGNUP_ENDPOINT ? 'post' : 'get';
 ---
 <form class="signup" action={action} method={method} data-signup data-live={SIGNUP_ENDPOINT ? 'true' : 'false'}>
   <input type="hidden" name="list" value={list} />
+  <!-- Honeypot: off-screen, out of the tab order and hidden from assistive tech. Bots fill it; the endpoint drops those. -->
+  <div class="hp" aria-hidden="true">
+    <label for={`${id}-website`}>Website</label>
+    <input id={`${id}-website`} type="text" name="website" tabindex="-1" autocomplete="off" />
+  </div>
   <div class="field">
     <label for={`${id}-email`}>Email address</label>
     <input id={`${id}-email`} type="email" name="email" autocomplete="email" required placeholder="you@company.com" />
@@ -27,10 +32,17 @@ const method = SIGNUP_ENDPOINT ? 'post' : 'get';
   .form-note { margin-top: 10px; font-size: 0.8125rem; color: var(--muted); }
   :global(.dark) .form-note { color: var(--on-dark-muted); }
   .form-note a { color: inherit; }
+  .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 </style>
 <script>
+  // The endpoint redirects back with ?signup=invalid when the address fails validation.
+  const invalid = new URLSearchParams(location.search).get('signup') === 'invalid';
   for (const form of document.querySelectorAll<HTMLFormElement>('form[data-signup]')) {
-    if (form.dataset.live === 'true') continue;
+    if (form.dataset.live === 'true') {
+      const status = form.querySelector<HTMLElement>('.form-status');
+      if (invalid && status) status.textContent = "That email address doesn't look right.";
+      continue;
+    }
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const status = form.querySelector<HTMLElement>('.form-status');
