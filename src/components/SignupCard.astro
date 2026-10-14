@@ -1,8 +1,8 @@
 ---
-import SignupForm from './SignupForm.astro';
+import SignupForm, { type SignupList } from './SignupForm.astro';
 
 interface Props {
-  list?: string;
+  list?: SignupList;
   heading?: string;
 }
 const { list = 'newsletter', heading = 'Get the weekly teardown' } = Astro.props;

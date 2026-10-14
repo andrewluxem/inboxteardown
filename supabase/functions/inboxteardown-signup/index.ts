@@ -1,8 +1,9 @@
 // Receives the site's signup form (src/components/SignupForm.astro): a native
 // urlencoded POST with `email`, `list` and the `website` honeypot. The browser
-// navigates here, so every outcome a real visitor can hit is a 303 back to
-// the site (?signup=invalid or ?signup=error on the form's page when it did
-// not work); only a disallowed origin gets a bare 403.
+// navigates here, so every outcome is a 303 back to the site: an invalid
+// email goes back to the form's page with ?signup=invalid, and every other
+// failure goes to /signed-up/?signup=error. Only a disallowed origin gets a
+// bare 403, since there is no trusted site to send it to.
 //
 // Deployed with --no-verify-jwt: the form has no Supabase key to send.
 
@@ -80,17 +81,21 @@ Deno.serve(async (req) => {
   if (!isAllowed(origin)) return text(403, 'Forbidden');
 
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(origin) });
-  if (req.method !== 'POST') return text(405, 'Method not allowed', { ...corsHeaders(origin), Allow: 'POST, OPTIONS' });
+
+  // Anything that is not a duplicate or an invalid email lands here.
+  const failed = () => redirect(`${origin}/signed-up/?signup=error`, origin);
+
+  if (req.method !== 'POST') return failed();
 
   const type = (req.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
-  if (type !== 'application/x-www-form-urlencoded') return text(415, 'Unsupported media type', corsHeaders(origin));
+  if (type !== 'application/x-www-form-urlencoded') return failed();
 
   const raw = await readCapped(req, MAX_BODY_BYTES);
-  if (raw === null) return text(413, 'Request too large', corsHeaders(origin));
+  if (raw === null) return failed();
   const form = new URLSearchParams(raw);
 
   const list = form.get('list') ?? '';
-  if (!LISTS.has(list)) return text(400, 'Unknown list', corsHeaders(origin));
+  if (!LISTS.has(list)) return failed();
   const signedUp = `${origin}/signed-up/?list=${list}`;
 
   // Bots fill every field; people never see this one. Same answer as success.
@@ -100,12 +105,11 @@ Deno.serve(async (req) => {
   let sourcePage: string | null = null;
   if (referer && originOf(referer) === origin) sourcePage = new URL(referer).pathname.slice(0, 512);
 
-  // Back to the form's page; the form shows a message for ?signup=<outcome>.
-  const back = (outcome: 'invalid' | 'error') =>
-    redirect(`${origin}${sourcePage ?? '/'}?signup=${outcome}#signup-${list}-email`, origin);
-
+  // Back to the form's page; the form shows a message for ?signup=invalid.
   const email = (form.get('email') ?? '').trim().toLowerCase();
-  if (email.length > 254 || !EMAIL.test(email)) return back('invalid');
+  if (email.length > 254 || !EMAIL.test(email)) {
+    return redirect(`${origin}${sourcePage ?? '/'}?signup=invalid#signup-${list}-email`, origin);
+  }
 
   // Duplicate (email, list) is ignored, so new and repeat signups look the same.
   try {
@@ -121,11 +125,11 @@ Deno.serve(async (req) => {
     });
     if (!res.ok) {
       console.error('insert failed', res.status, await res.text());
-      return back('error');
+      return failed();
     }
   } catch (err) {
     console.error('insert failed', err);
-    return back('error');
+    return failed();
   }
   return redirect(signedUp, origin);
 });

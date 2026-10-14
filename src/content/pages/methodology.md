@@ -7,7 +7,7 @@ rubric_date: "2026-10-15"
 
 Every email on the scoreboard is scored on the same eight dimensions, listed above. Each dimension gets a whole number from 1 to 5, so a total runs from 8 to 40.
 
-Each morning's scoreboard covers the marketing email our inbox received in the 24 hours ending just before 8 a.m. Mountain Time.
+Each morning's scoreboard covers the marketing email sent the previous calendar day, from midnight to midnight Mountain Time (America/Denver).
 
 These scores are pre-calibration. Rubric 1.0 is a first version: the level descriptions below have not yet been checked against a panel of human ratings, and they may be reworded once they are. Calibration is planned for after launch, and there is no date for it yet. Every published score keeps the rubric version it was scored under, and a published score is never changed silently.
 
