@@ -63,9 +63,14 @@ export async function getTeardowns(): Promise<TeardownEntry[]> {
 }
 
 export const CURRENT_TRACKER = 'black-friday-2026';
+/** First day of the current tracker; its page shows a "starts" state until a content file exists. */
+export const CURRENT_TRACKER_START = '2026-11-02';
+
+let cachedTrackers: CollectionEntry<'tracker'>[] | undefined;
 
 export async function getTrackers(): Promise<CollectionEntry<'tracker'>[]> {
-  return getCollection('tracker');
+  cachedTrackers ??= await getCollection('tracker');
+  return cachedTrackers;
 }
 
 export async function getTracker(slug = CURRENT_TRACKER): Promise<CollectionEntry<'tracker'> | undefined> {

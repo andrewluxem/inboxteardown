@@ -51,7 +51,7 @@ The scoring pipeline writes files; the site reads them. Full spec with examples:
 - `src/content/scoreboard/YYYY-MM-DD.md`: one file per day, a list of scored emails with 8
   dimension scores (integers 1 to 5), notes, sources, and check results.
 - `src/content/teardowns/YYYY-MM-DD-slug.md`: weekly articles. `draft: true` hides them in production.
-- `src/content/tracker/bf-2026.md`: Black Friday tracker data. `published: false` keeps it hidden.
+- `src/content/tracker/bf-2026.md`: Black Friday tracker data (not yet written). `published: false` keeps it hidden.
 - `src/content/pages/methodology.md`: methodology prose.
 
 Totals, caps, bands, and rankings are derived in `src/lib/scoring.ts` and never stored.
@@ -67,20 +67,14 @@ Brand pages are derived by grouping scoreboard emails by `brand_slug`.
    industry, duplicate id) fails the build and names the file and field.
 4. Commit and push. The home page always shows the newest file.
 
-## Removing the fixtures
+## Fixtures
 
-All current content is fictional fixture data. Every fixture file starts with a
-`# FIXTURE` comment. Once the pipeline writes real files:
-
-```bash
-git rm src/content/scoreboard/2026-10-0[5-7].md
-git rm src/content/teardowns/2026-10-07-30-welcome-series-scored.md src/content/teardowns/2026-10-14-black-friday-early-movers.md
-# Replace, don't delete, the tracker: the build expects src/content/tracker/ to hold the BF file.
-```
-
-The build needs at least one scoreboard file. Remove the fixtures in the same commit that adds
-the first real scoreboard. The screenshots in `docs/screenshots/` show fixture data; regenerate them
-with `npm run screenshots` once real data exists.
+The fictional fixture boards, teardowns and tracker were removed when the first real boards
+(2026-10-13 and 2026-10-14) were published with `scripts/publish_board.sh` from the scorer repo.
+With no teardown files the archive shows a "first teardown is on its way" note; with no tracker
+file `/tracker/black-friday-2026/` shows a noindex "Starts Nov 2" page that stays out of the nav
+and sitemap. The screenshots in `docs/screenshots/` still show fixture data; regenerate them with
+`npm run screenshots`.
 
 `tests/fixtures/malformed-scoreboard.md` is a test fixture, not site content. Keep it.
 

@@ -10,8 +10,8 @@ const OUT = new URL('../docs/screenshots/', import.meta.url);
 const WIDTHS = [1280, 390];
 const PAGES = [
   ['home', '/'],
-  ['scorecard', '/email/2026-10-06-kestrel-outdoor-1/'],
-  ['brand', '/brand/kestrel-outdoor/'],
+  ['scorecard', '/email/2026-10-13-kohls-1/'],
+  ['brand', '/brand/kohls/'],
   ['teardown-archive', '/teardown/'],
   ['tracker', '/tracker/black-friday-2026/'],
   ['privacy', '/privacy/'],

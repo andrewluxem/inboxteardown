@@ -12,6 +12,9 @@ const teardowns = await getTeardowns();
       <p class="eyebrow">Weekly · <a href="/teardown/rss.xml">RSS</a></p>
       <h1 class="display arch-title">The Teardown</h1>
       <p class="lede">One long look a week at a pattern from the scores.</p>
+      {teardowns.length === 0 && (
+        <p class="archive-empty">The first teardown is on its way. Sign up to get it when it publishes.</p>
+      )}
       <ol class="archive">
         {teardowns.map((t) => (
           <li class="arch-item">
@@ -31,6 +34,8 @@ const teardowns = await getTeardowns();
   .arch-title { margin-top: 12px; }
   .lede { margin-top: 16px; }
   .archive { list-style: none; padding: 0; margin-top: 40px; border-top: 2px solid var(--ink); }
+  .archive-empty { margin-top: 40px; padding-block: 24px; border-top: 2px solid var(--ink); color: var(--ink-2); }
+  .archive:empty { display: none; }
   .arch-item { padding-block: 24px; border-bottom: 1px solid var(--rule); }
   .arch-h { font-size: clamp(1.75rem, 1.3rem + 2vw, 2.75rem); margin-top: 8px; }
   .arch-h a { text-decoration: none; }
