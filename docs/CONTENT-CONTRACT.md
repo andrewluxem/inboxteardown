@@ -48,7 +48,8 @@ Rules:
 
 - `score` is an integer from 1 to 5. `note` is a non-empty string. `source` is
   `check`, `judgment`, or `both`.
-- `checks[].result` is `pass`, `fail`, or `unverified`; `detail` is optional.
+- `checks[].result` is `pass`, `fail`, or `unverified` (shown as
+  "Not verified"); `detail` is optional.
   Use `unverified` when a check could not reach a verdict (HTTP 403 or 429, a
   timeout, a redirect with no Location header, an image-only footer). Rubric
   v1 never lowers a score for it.

@@ -96,7 +96,7 @@ A 1 on either of these is published only when a failed automated check backs it,
 
 ## Checks and judgment
 
-Some of the score comes from automated checks that give the same answer every time. Each scorecard lists them under Automated checks with one of three results: **pass**, **fail**, or **unverified**. Unverified means the check could not reach a verdict, for example because a website blocked the request or timed out. An unverified result never lowers a score.
+Some of the score comes from automated checks that give the same answer every time. Each scorecard lists them under Automated checks with one of three results: **pass**, **fail**, or **not verified**. Not verified means the check could not reach a verdict, for example because a website blocked the request or timed out. A not-verified result never lowers a score.
 
 The rest is judgment, made by an AI language model. It reads the email's visible text line by line, along with measurements from a phone-sized rendering of the email: where the main button sits, font sizes, and how much of the email is live text rather than images. It does not look at the images themselves. For each dimension it picks one of the five written levels above and names the line of the email that supports it.
 

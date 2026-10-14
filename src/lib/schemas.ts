@@ -188,3 +188,4 @@ export type ScoreboardDay = z.infer<typeof scoreboardSchema>;
 export type Teardown = z.infer<typeof teardownSchema>;
 export type Tracker = z.infer<typeof trackerSchema>;
 export type Dimensions = z.infer<typeof dimensionsSchema>;
+export type CheckResult = z.infer<typeof checkSchema>['result'];
