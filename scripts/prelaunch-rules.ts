@@ -149,10 +149,28 @@ export function checkAndrewAnywhere(files: TextFile[]): Failure[] {
 
 // ---------- Built HTML ----------
 
-export function checkPlaceholders(pages: Page[]): Failure[] {
+/**
+ * Bracketed text that a sender wrote into an email's subject, preheader, brand
+ * or themes on a scoreboard (e.g. a subject that starts "[Welcome Flow Wool
+ * Variation B]"). The site quotes it as is, so it is not a placeholder.
+ */
+export function senderCopyBrackets(boards: { emails?: Record<string, unknown>[] }[]): Set<string> {
+  const out = new Set<string>();
+  for (const b of boards) {
+    for (const e of b.emails ?? []) {
+      const copy = [e.subject, e.preheader, e.brand, ...(Array.isArray(e.themes) ? e.themes : [])];
+      for (const s of copy) if (typeof s === 'string') for (const m of s.match(PLACEHOLDER) ?? []) out.add(m);
+    }
+  }
+  return out;
+}
+
+export function checkPlaceholders(pages: Page[], senderCopy: Set<string> = new Set()): Failure[] {
   const where = new Map<string, string[]>();
   for (const p of pages) {
-    for (const m of new Set(visible(p.html).match(PLACEHOLDER) ?? [])) where.set(m, [...(where.get(m) ?? []), p.path]);
+    for (const m of new Set(visible(p.html).match(PLACEHOLDER) ?? [])) {
+      if (!senderCopy.has(m)) where.set(m, [...(where.get(m) ?? []), p.path]);
+    }
   }
   return [...where.entries()].sort().map(([ph, paths]) => ({ detail: `${ph} on ${list(paths)}` }));
 }

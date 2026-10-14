@@ -35,8 +35,8 @@ emails:                             # at least one
       trust:             { score: 4, note: "...", source: both }
       technical_hygiene: { score: 1, note: "...", source: check }
     checks:                            # optional, defaults to []
-      - { name: secondary_links_resolve, result: fail, detail: "1 of 9 links returns 404" }
-      - { name: unsubscribe_link_in_body, result: pass }
+      - { name: Other links, result: fail, detail: "1 of 9 links returns 404" }
+      - { name: Unsubscribe link, result: pass }
     screenshot: null                   # or an https:// Blob URL (or "/shots/<file>" for fixtures)
     correction:                        # optional; set when a published score changes
       date: 2026-10-08
@@ -48,6 +48,9 @@ Rules:
 
 - `score` is an integer from 1 to 5. `note` is a non-empty string. `source` is
   `check`, `judgment`, or `both`.
+- `checks[].name` is one of the neutral public names the scorer's export writes
+  (`PUBLIC_CHECK_NAMES` in `src/lib/checks.ts`, e.g. `DMARC alignment`), shown as
+  is next to the result. It names what was checked, never a failure.
 - `checks[].result` is `pass`, `fail`, or `unverified` (shown as
   "Not verified"); `detail` is optional.
   Use `unverified` when a check could not reach a verdict (HTTP 403 or 429, a

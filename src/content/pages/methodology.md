@@ -131,7 +131,7 @@ A failed check does not subtract points. It sets the highest score a dimension c
 | Unfilled merge fields, such as `{{FirstName}}` | Relevance | 1 |
 | One confirmed typo | Copy & voice | 4 (3 for two or more) |
 
-A link counts as broken only when it fails for certain on two separate tries: the page is gone (HTTP 404 or 410) or the domain does not exist. Server errors, timeouts, and sites that block automated requests are recorded as unverified. Links are checked when the email is scored, the morning after it arrives, not at the moment it was sent.
+A link counts as broken only when it fails for certain on two separate tries: the page is gone (HTTP 404 or 410) or the domain does not exist. Server errors, timeouts, and sites that block automated requests are recorded as not verified. Links are checked when the email is scored, the morning after it arrives, not at the moment it was sent.
 
 Typos are flagged by a spell checker and count only after the model confirms they are real errors rather than brand or product names.
 

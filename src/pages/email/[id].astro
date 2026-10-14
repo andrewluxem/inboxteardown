@@ -5,7 +5,6 @@ import Pips from '../../components/Pips.astro';
 import { DIMENSIONS, DIMENSION_KEYS, BANDS, TOTAL_MAX } from '../../config/rubric';
 import { SITE, mailto } from '../../config/site';
 import { industryLabel } from '../../config/industries';
-import { checkLabel } from '../../lib/checks';
 import { getAllEmails } from '../../lib/content';
 import type { FlatEmail } from '../../lib/brands';
 import { formatDateTimeMT, formatLong, formatMedium } from '../../lib/dates';
@@ -100,7 +99,7 @@ const reason = cap
             {email.checks.map((c) => (
               <li class:list={['check', `check--${c.result}`]}>
                 <span class="check-result mono">{resultLabel[c.result]}</span>
-                <span class="check-name" title={c.name}>{checkLabel(c.name)}</span>
+                <span class="check-name">{c.name}</span>
                 {c.detail && <span class="check-detail">{c.detail}</span>}
               </li>
             ))}

@@ -3,6 +3,7 @@
 // rule failed. Node runs this TypeScript directly (type stripping, Node 22.18+).
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { parse } from 'yaml';
 import { SITE, SITE_HOST } from '../src/config/site.ts';
 import {
   checkAndrewAnywhere,
@@ -11,6 +12,7 @@ import {
   checkFooterContact,
   checkOgImages,
   checkPlaceholders,
+  senderCopyBrackets,
   checkPrivacyPage,
   checkRobots,
   checkScriptHosts,
@@ -42,6 +44,9 @@ const srcFiles: TextFile[] = walk(join(ROOT, 'src'))
 // Every file under src/, whatever its extension, for the "[ANDREW" sweep.
 const allSrcFiles: TextFile[] = walk(join(ROOT, 'src')).map((f) => ({ path: relative(ROOT, f), text: readFileSync(f, 'utf8') }));
 const contentFiles = srcFiles.filter((f) => f.path.startsWith('src/content/'));
+const boards = contentFiles
+  .filter((f) => f.path.startsWith('src/content/scoreboard/') && f.path.endsWith('.md'))
+  .map((f) => parse(f.text.split(/^---$/m)[1] ?? '') ?? {});
 
 const distPaths = walk(DIST).map((f) => relative(DIST, f));
 const pages: Page[] = distPaths.filter((p) => p.endsWith('.html')).map((p) => ({ path: p, html: readFileSync(join(DIST, p), 'utf8') }));
@@ -50,7 +55,7 @@ const robotsPath = join(DIST, 'robots.txt');
 const rules: [string, Failure[]][] = [
   ['No third-party scripts (only the site and Vercel insights)', checkScriptHosts(pages, SITE_HOST)],
   ['No TODO(andrew) left in src/', checkTodos(srcFiles)],
-  ['No bracketed placeholders in built pages', checkPlaceholders(pages)],
+  ['No bracketed placeholders in built pages', checkPlaceholders(pages, senderCopyBrackets(boards))],
   ['No [ANDREW: ...] markers in src/ or built pages', checkAndrewMarkers(srcFiles, pages)],
   ['No "[ANDREW" anywhere under src/', checkAndrewAnywhere(allSrcFiles)],
   ['No fixture brands in src/content/', checkFixtureBrands(contentFiles)],

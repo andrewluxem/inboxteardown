@@ -6,6 +6,7 @@ import {
   checkFooterContact,
   checkOgImages,
   checkPlaceholders,
+  senderCopyBrackets,
   checkPrivacyPage,
   checkRobots,
   checkScriptHosts,
@@ -72,6 +73,14 @@ describe('bracketed placeholders', () => {
       page('b.html', '<p>[PRICE]</p>'),
     ]);
     expect(f.map((x) => x.detail)).toEqual(['[PRICE] on a.html, b.html', '[Scale anchors to be written] on a.html']);
+  });
+  it("passes bracketed text quoted from a sender's subject, but not the same text elsewhere", () => {
+    const sender = senderCopyBrackets([
+      { emails: [{ subject: '[Welcome Flow Wool Variation B] Meet Easy Care Wool', preheader: 'Hi', themes: ['[New Arrivals]'] }] },
+    ]);
+    expect([...sender]).toEqual(['[Welcome Flow Wool Variation B]', '[New Arrivals]']);
+    const f = checkPlaceholders([page('a.html', '<p>[Welcome Flow Wool Variation B] Meet Easy Care Wool</p><p>[PRICE]</p>')], sender);
+    expect(f.map((x) => x.detail)).toEqual(['[PRICE] on a.html']);
   });
 });
 
