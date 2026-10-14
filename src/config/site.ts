@@ -24,13 +24,10 @@ export const SITE = {
   tagline: 'Scored competitive email intel',
   timezone: 'America/Denver',
   timezoneLabel: 'MT',
-  // TODO(andrew): set the Watchlist price.
-  // Must be: the monthly price as display text with its currency sign and
-  // without "/mo", e.g. '$29'. The page appends "/mo" itself.
-  // When set: /watchlist/ shows "{price}/mo" (src/pages/watchlist.astro);
-  // nothing else reads it. While '[PRICE]', prelaunch's placeholder rule
-  // fails on watchlist/index.html.
-  watchlistPrice: '[PRICE]',
+  // The planned monthly price as display text, shown as is on /watchlist/
+  // (src/pages/watchlist.astro) with "Planned launch price..." under it;
+  // nothing else reads it.
+  watchlistPrice: '$39/mo',
   // Free pages show this many days of brand history.
   freeHistoryDays: 30,
 };

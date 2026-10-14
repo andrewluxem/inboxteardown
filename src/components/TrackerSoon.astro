@@ -1,6 +1,6 @@
 ---
 // The tracker page before its content file exists: when tracking starts and
-// where to get an alert. noindex; not in the sitemap or navigation.
+// what counts as started. noindex; not in the sitemap or navigation.
 import Base from '../layouts/Base.astro';
 import { formatShort } from '../lib/dates';
 import { startedDefinition } from '../lib/tracker';
@@ -18,7 +18,7 @@ const year = start.slice(0, 4);
   <section class="section cta-band dark" aria-labelledby="soon-cta">
     <div>
       <p class="eyebrow">Watchlist</p>
-      <h2 id="soon-cta" class="display">Get an alert the day a brand you watch launches</h2>
+      <h2 id="soon-cta" class="display">The Watchlist is coming</h2>
     </div>
     <a class="btn btn--accent" href="/watchlist/">Join the Watchlist waitlist</a>
   </section>
