@@ -5,6 +5,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { SITE, SITE_HOST } from '../src/config/site.ts';
 import {
+  checkAndrewAnywhere,
   checkAndrewMarkers,
   checkFixtureBrands,
   checkFooterContact,
@@ -38,6 +39,8 @@ const TEXT = /\.(astro|ts|mts|mjs|js|md|mdx|css|json|ya?ml)$/;
 const srcFiles: TextFile[] = walk(join(ROOT, 'src'))
   .filter((f) => TEXT.test(f))
   .map((f) => ({ path: relative(ROOT, f), text: readFileSync(f, 'utf8') }));
+// Every file under src/, whatever its extension, for the "[ANDREW" sweep.
+const allSrcFiles: TextFile[] = walk(join(ROOT, 'src')).map((f) => ({ path: relative(ROOT, f), text: readFileSync(f, 'utf8') }));
 const contentFiles = srcFiles.filter((f) => f.path.startsWith('src/content/'));
 
 const distPaths = walk(DIST).map((f) => relative(DIST, f));
@@ -49,6 +52,7 @@ const rules: [string, Failure[]][] = [
   ['No TODO(andrew) left in src/', checkTodos(srcFiles)],
   ['No bracketed placeholders in built pages', checkPlaceholders(pages)],
   ['No [ANDREW: ...] markers in src/ or built pages', checkAndrewMarkers(srcFiles, pages)],
+  ['No "[ANDREW" anywhere under src/', checkAndrewAnywhere(allSrcFiles)],
   ['No fixture brands in src/content/', checkFixtureBrands(contentFiles)],
   ['Privacy page is built', checkPrivacyPage(pages)],
   ['PUBLIC_SIGNUP_ENDPOINT set at build time', checkSignupEndpoint(pages)],

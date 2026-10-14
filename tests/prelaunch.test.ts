@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  checkAndrewAnywhere,
   checkAndrewMarkers,
   checkFixtureBrands,
   checkFooterContact,
@@ -94,6 +95,23 @@ describe('[ANDREW: ...] markers', () => {
     const f = checkAndrewMarkers([{ path: 'a.md', text: `[ANDREW: ${'x'.repeat(200)}]` }], []);
     expect(f[0]!.detail.length).toBeLessThan(100);
     expect(f[0]!.detail.endsWith('...')).toBe(true);
+  });
+});
+
+describe('"[ANDREW" anywhere under src/', () => {
+  it('passes files without the string', () => {
+    expect(checkAndrewAnywhere([{ path: 'src/a.md', text: '[Andrew] ANDREW: no bracket. [PRICE]' }])).toEqual([]);
+  });
+  it('reports every variant the colon rule misses, in any file', () => {
+    const f = checkAndrewAnywhere([
+      { path: 'src/a.svg', text: '<text>[ANDREW]</text>\n[ANDREW - date] [ANDREW date]\n[ANDREW: x]' },
+    ]);
+    expect(f.map((x) => x.detail)).toEqual([
+      'src/a.svg:1  [ANDREW]',
+      'src/a.svg:2  [ANDREW - date]',
+      'src/a.svg:2  [ANDREW date]',
+      'src/a.svg:3  [ANDREW: x]',
+    ]);
   });
 });
 

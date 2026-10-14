@@ -134,6 +134,19 @@ export function checkAndrewMarkers(files: TextFile[], pages: Page[]): Failure[] 
   return [...inSource, ...inPages];
 }
 
+/** Any "[ANDREW" at all: no colon, other spacing, or "[ANDREW]" alone. */
+const ANDREW_ANY = /\[ANDREW[^\]\n]*\]?/g;
+
+/**
+ * Stricter sibling of checkAndrewMarkers for source: every "[ANDREW" in every
+ * file under src/, whatever follows it and whatever the file extension.
+ */
+export function checkAndrewAnywhere(files: TextFile[]): Failure[] {
+  return files.flatMap((f) =>
+    f.text.split('\n').flatMap((line, i) => (line.match(ANDREW_ANY) ?? []).map((m) => ({ detail: `${f.path}:${i + 1}  ${snippet(m)}` }))),
+  );
+}
+
 // ---------- Built HTML ----------
 
 export function checkPlaceholders(pages: Page[]): Failure[] {
