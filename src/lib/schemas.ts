@@ -42,7 +42,7 @@ export const dimensionsSchema = z.strictObject({
 
 export const checkSchema = z.strictObject({
   name: z.string().min(1),
-  result: z.enum(['pass', 'fail']),
+  result: z.enum(['pass', 'fail', 'unverified']),
   detail: z.string().optional(),
 });
 
@@ -161,3 +161,4 @@ export type ScoreboardDay = z.infer<typeof scoreboardSchema>;
 export type Teardown = z.infer<typeof teardownSchema>;
 export type Tracker = z.infer<typeof trackerSchema>;
 export type Dimensions = z.infer<typeof dimensionsSchema>;
+export type CheckResult = z.infer<typeof checkSchema>['result'];

@@ -9,6 +9,7 @@ import { getAllEmails } from '../../lib/content';
 import type { FlatEmail } from '../../lib/brands';
 import { formatDateTimeMT, formatLong, formatMedium } from '../../lib/dates';
 import { cappingDimension, lowestDimension, score } from '../../lib/scoring';
+import type { CheckResult } from '../../lib/schemas';
 
 export const getStaticPaths = (async () => {
   const emails = await getAllEmails();
@@ -21,6 +22,7 @@ const s = score(email);
 const cap = cappingDimension(email);
 const low = lowestDimension(email);
 const kindLabel = { campaign: 'Campaign', welcome: 'Welcome', transactional: 'Transactional' } as const;
+const checkLabel: Record<CheckResult, string> = { pass: 'PASS', fail: 'FAIL', unverified: 'NOT VERIFIED' };
 
 const verdictWord = s.capped ? 'Capped' : BANDS[s.band].label;
 const reason = cap
@@ -96,7 +98,7 @@ const reason = cap
           <ul class="checks">
             {email.checks.map((c) => (
               <li class:list={['check', `check--${c.result}`]}>
-                <span class="check-result mono">{c.result.toUpperCase()}</span>
+                <span class="check-result mono">{checkLabel[c.result]}</span>
                 <span class="check-name">{c.name}</span>
                 {c.detail && <span class="check-detail">{c.detail}</span>}
               </li>
@@ -157,6 +159,8 @@ const reason = cap
   .check--pass .check-result { color: var(--strong-fg); }
   .check--fail .check-result { color: var(--accent); }
   .check--fail { border-color: var(--accent); }
+  .check--unverified .check-result { color: var(--muted); }
+  .check--unverified { border-style: dashed; }
   .check-name { font-weight: 600; }
   .check-detail { font-size: var(--text-sm); color: var(--ink-2); }
 

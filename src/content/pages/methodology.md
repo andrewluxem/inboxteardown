@@ -26,7 +26,7 @@ A score of 1 on **Trust** or on **Technical hygiene** caps the email, whatever i
 
 ## Checks and judgment
 
-Some of the score comes from deterministic checks that give the same answer every time: whether links resolve, whether an unsubscribe link is present, whether merge tags rendered. Each scorecard lists these under Automated checks with a pass or fail result.
+Some of the score comes from deterministic checks that give the same answer every time: whether an unsubscribe link is present, whether merge tags rendered. Link checks are the exception: whether links resolve reflects the moment the email was checked, and a link can break or be fixed later. Each scorecard lists these under Automated checks with a pass, fail, or not verified result.
 
 The rest is judgment. Each dimension on a scorecard is labeled with its source: CHECK when it comes from automated checks alone, JUDGMENT when a reviewer scored it, and BOTH when checks inform a reviewer's score.
 

@@ -25,6 +25,15 @@ describe('content schemas accept the fixtures', () => {
   });
 });
 
+describe('exported check names', () => {
+  // The scorer checks DMARC only; a label naming SPF or DKIM overstates what was checked.
+  it.each(mdFiles('scoreboard'))('scoreboard/%s names no SPF or DKIM check', (f) => {
+    const day = frontmatter(join(content('scoreboard'), f)) as { emails: { checks?: { name: string }[] }[] };
+    const names = day.emails.flatMap((e) => (e.checks ?? []).map((c) => c.name));
+    expect(names.filter((n) => /SPF|DKIM/i.test(n))).toEqual([]);
+  });
+});
+
 describe('content schemas reject a malformed scoreboard', () => {
   const bad = frontmatter(join(import.meta.dirname, 'fixtures/malformed-scoreboard.md'));
   const result = scoreboardSchema.safeParse(bad);

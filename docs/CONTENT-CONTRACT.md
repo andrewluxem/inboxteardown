@@ -48,7 +48,8 @@ Rules:
 
 - `score` is an integer from 1 to 5. `note` is a non-empty string. `source` is
   `check`, `judgment`, or `both`.
-- `checks[].result` is `pass` or `fail`; `detail` is optional.
+- `checks[].result` is `pass`, `fail`, or `unverified` (the check could not be run; shown as
+  "Not verified"); `detail` is optional.
 - Subjects are rendered as text. Merge tags such as `{{FirstName}}` show
   literally, which is intended. Quote any subject that starts with `{`, `[`,
   `*`, `!`, or contains `: `.
