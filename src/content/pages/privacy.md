@@ -3,31 +3,37 @@ title: "Privacy"
 description: "What Inbox Teardown collects when you sign up, who stores it, and how to unsubscribe or ask for deletion."
 ---
 
-<!-- TODO(andrew): review this whole page before launch. It states only the facts given so far; every gap is marked. -->
-
 ## What we collect
 
-When you sign up, we collect the email address you submit and which list you joined: the newsletter or the Watchlist waitlist.
+When you sign up, the form sends two things: the email address you type in, and which list you joined (the newsletter or the Watchlist waitlist). There are no other fields to fill in. The form also has a hidden field that only spam bots fill in; it is empty when you submit.
 
-<!-- TODO(andrew): list anything else collected at signup or by the provider (for example, timestamps or IP address), if applicable. -->
+Until signups open, the form sends nothing anywhere. Submitting it only shows a "Signups open soon" message.
+
+With your signup we also record the time you signed up and the page you signed up from (its path, without any query string). We do not store your IP address with your signup, and there is no confirmation email to click.
 
 ## Who stores it
 
-Signups are stored by {emailProvider}.
+Signups are stored by {emailProvider}, in a database table that only this site's signup service can read or write. See [Supabase's privacy policy](https://supabase.com/privacy).
 
-<!-- TODO(andrew): name the email provider (set emailProvider in src/config/site.ts) and link to its privacy policy. -->
+## Cookies
+
+This site does not set cookies and does not store anything in your browser. The fonts are served from this site, not from a font service.
 
 ## Analytics
 
-The site uses Vercel Web Analytics.
+The site uses Vercel Web Analytics, and no other analytics or third-party scripts. Its script is loaded from this site's own domain, and it reports page views to Vercel.
 
-<!-- TODO(andrew): describe what Vercel Web Analytics collects and how it handles that data, from Vercel's privacy documentation. -->
+Vercel Web Analytics uses no third-party cookies and records page views anonymously. To tell visitors apart, it uses a hash of the incoming request, which is discarded after 24 hours. For each page view it stores the time, the URL, the referrer, filtered query parameters, your location to the city level, and your operating system, browser and device type. See [Vercel's Web Analytics privacy documentation](https://vercel.com/docs/analytics/privacy-policy).
+
+## Hosting
+
+The site is hosted on Vercel. As with any website, loading a page sends your browser's request, including your IP address, to the host.
+
+Vercel processes that request data, including your IP address, to serve the site. See [Vercel's privacy notice](https://vercel.com/legal/privacy-notice).
 
 ## Unsubscribe and deletion
 
-Every email we send has an unsubscribe link. To have your address deleted, email {contactEmail}.
-
-<!-- TODO(andrew): state how quickly deletion requests are handled. -->
+To unsubscribe or to have your address deleted, email {contactEmail}. We handle unsubscribe and deletion requests within 30 days.
 
 ## About the emails we score
 
@@ -39,6 +45,4 @@ Questions about this page: {contactEmail}.
 
 ## Effective date
 
-[EFFECTIVE DATE]
-
-<!-- TODO(andrew): set the effective date. -->
+This policy takes effect on October 15, 2026.

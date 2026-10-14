@@ -1,0 +1,37 @@
+---
+// Where the signup endpoint sends people after a signup: /signed-up/?list=newsletter|watchlist,
+// or /signed-up/?signup=error when the signup did not go through.
+// Static, so the list-specific line and the error state are picked client
+// side; without JS the generic success line stays.
+import Base from '../layouts/Base.astro';
+import { SITE, mailto } from '../config/site';
+---
+<Base title="You're signed up" noindex>
+  <div style="max-width: 760px; padding-block: 24px 64px;">
+    <p class="eyebrow">Signups</p>
+    <div data-state="ok">
+      <h1 class="display" style="margin-top: 12px;">You're signed up</h1>
+      <p class="lede" style="margin-top: 18px;" data-list="">Thanks. Your address is on the list.</p>
+      <p class="lede" style="margin-top: 18px;" data-list="newsletter" hidden>You'll get the weekly teardown when the first issue goes out.</p>
+      <p class="lede" style="margin-top: 18px;" data-list="watchlist" hidden>You're on the Watchlist waitlist. We'll email you when the Watchlist opens.</p>
+      <p class="muted" style="margin-top: 18px;">Changed your mind? Email <a href={mailto('Remove my signup')}>{SITE.contactEmail}</a> and we'll remove your address.</p>
+    </div>
+    <div data-state="error" hidden>
+      <h1 class="display" style="margin-top: 12px;">That didn't work</h1>
+      <p class="lede" style="margin-top: 18px;">Something went wrong, try again or email <a href={mailto('Signup problem')}>{SITE.contactEmail}</a>.</p>
+    </div>
+    <p style="margin-top: 28px;"><a class="btn" href="/">Back to the scoreboard</a></p>
+  </div>
+</Base>
+<script>
+  const params = new URLSearchParams(location.search);
+  if (params.get('signup') === 'error') {
+    for (const el of document.querySelectorAll<HTMLElement>('[data-state]')) el.hidden = el.dataset.state !== 'error';
+    document.title = document.title.replace("You're signed up", 'Signup failed');
+  } else {
+    const list = params.get('list');
+    if (list === 'newsletter' || list === 'watchlist') {
+      for (const el of document.querySelectorAll<HTMLElement>('[data-list]')) el.hidden = el.dataset.list !== list;
+    }
+  }
+</script>

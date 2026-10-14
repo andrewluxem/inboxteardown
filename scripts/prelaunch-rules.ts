@@ -112,6 +112,41 @@ export function checkFixtureBrands(files: TextFile[]): Failure[] {
   });
 }
 
+// ---------- Open questions ----------
+
+/** An open question left in copy for Andrew, e.g. "[ANDREW: effective date]". */
+const ANDREW_MARKER = /\[ANDREW:[^\]]*\]?/g;
+const snippet = (m: string) => (m.length > 80 ? `${m.slice(0, 77)}...` : m);
+
+/**
+ * Every "[ANDREW:" marker: each one in source files with file and line, and
+ * each built page that still carries one. PLACEHOLDER cannot see these (the
+ * colon is outside its pattern), so they get their own rule.
+ */
+export function checkAndrewMarkers(files: TextFile[], pages: Page[]): Failure[] {
+  const inSource = files.flatMap((f) =>
+    f.text.split('\n').flatMap((line, i) => (line.match(ANDREW_MARKER) ?? []).map((m) => ({ detail: `${f.path}:${i + 1}  ${snippet(m)}` }))),
+  );
+  const inPages = pages.flatMap((p) => {
+    const found = p.html.match(ANDREW_MARKER) ?? [];
+    return found.length ? [{ detail: `${p.path}: ${found.length} marker${found.length === 1 ? '' : 's'}, first ${snippet(found[0]!)}` }] : [];
+  });
+  return [...inSource, ...inPages];
+}
+
+/** Any "[ANDREW" at all: no colon, other spacing, or "[ANDREW]" alone. */
+const ANDREW_ANY = /\[ANDREW[^\]\n]*\]?/g;
+
+/**
+ * Stricter sibling of checkAndrewMarkers for source: every "[ANDREW" in every
+ * file under src/, whatever follows it and whatever the file extension.
+ */
+export function checkAndrewAnywhere(files: TextFile[]): Failure[] {
+  return files.flatMap((f) =>
+    f.text.split('\n').flatMap((line, i) => (line.match(ANDREW_ANY) ?? []).map((m) => ({ detail: `${f.path}:${i + 1}  ${snippet(m)}` }))),
+  );
+}
+
 // ---------- Built HTML ----------
 
 export function checkPlaceholders(pages: Page[]): Failure[] {

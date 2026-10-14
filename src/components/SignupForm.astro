@@ -1,9 +1,11 @@
 ---
 import { SIGNUP_ENDPOINT } from '../config/signup';
 
+export type SignupList = 'newsletter' | 'watchlist';
+
 interface Props {
   /** Hidden `list` value sent with the signup. */
-  list?: string;
+  list?: SignupList;
   button?: string;
   id?: string;
 }
@@ -12,25 +14,46 @@ const { list = 'newsletter', button = 'Sign up', id = `signup-${list}` } = Astro
 // lands on a static page that says the same thing.
 const action = SIGNUP_ENDPOINT ?? '/signups-soon/';
 const method = SIGNUP_ENDPOINT ? 'post' : 'get';
+// Small print under the form: what each list sends and how often.
+const NOTES: Record<SignupList, string> = {
+  newsletter: 'One email a week with the teardown, starting with the first issue. Unsubscribe anytime.',
+  watchlist: 'One email when the Watchlist opens, and nothing before that. Unsubscribe anytime.',
+};
+const note = NOTES[list];
 ---
 <form class="signup" action={action} method={method} data-signup data-live={SIGNUP_ENDPOINT ? 'true' : 'false'}>
   <input type="hidden" name="list" value={list} />
+  <!-- Honeypot: off-screen, out of the tab order and hidden from assistive tech. Bots fill it; the endpoint drops those. -->
+  <div class="hp" aria-hidden="true">
+    <label for={`${id}-website`}>Website</label>
+    <input id={`${id}-website`} type="text" name="website" tabindex="-1" autocomplete="off" />
+  </div>
   <div class="field">
     <label for={`${id}-email`}>Email address</label>
     <input id={`${id}-email`} type="email" name="email" autocomplete="email" required placeholder="you@company.com" />
     <button class="btn btn--accent" type="submit">{button}</button>
   </div>
   <p class="form-status" role="status" aria-live="polite"></p>
-  <p class="form-note">We'll send the weekly Teardown. Unsubscribe anytime. <a href="/privacy/">Privacy</a>.</p>
+  <p class="form-note">{note} <a href="/privacy/">Privacy</a>.</p>
 </form>
 <style>
   .form-note { margin-top: 10px; font-size: 0.8125rem; color: var(--muted); }
   :global(.dark) .form-note { color: var(--on-dark-muted); }
   .form-note a { color: inherit; }
+  .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 </style>
 <script>
+  // The endpoint redirects back with ?signup=invalid for a bad address; other failures go to /signed-up/?signup=error.
+  const outcomes: Record<string, string> = {
+    invalid: "That email address doesn't look right.",
+  };
+  const message = outcomes[new URLSearchParams(location.search).get('signup') ?? ''];
   for (const form of document.querySelectorAll<HTMLFormElement>('form[data-signup]')) {
-    if (form.dataset.live === 'true') continue;
+    if (form.dataset.live === 'true') {
+      const status = form.querySelector<HTMLElement>('.form-status');
+      if (message && status) status.textContent = message;
+      continue;
+    }
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const status = form.querySelector<HTMLElement>('.form-status');

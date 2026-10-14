@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  checkAndrewAnywhere,
+  checkAndrewMarkers,
   checkFixtureBrands,
   checkFooterContact,
   checkOgImages,
@@ -70,6 +72,46 @@ describe('bracketed placeholders', () => {
       page('b.html', '<p>[PRICE]</p>'),
     ]);
     expect(f.map((x) => x.detail)).toEqual(['[PRICE] on a.html, b.html', '[Scale anchors to be written] on a.html']);
+  });
+});
+
+describe('[ANDREW: ...] markers', () => {
+  it('passes copy without markers, including other bracketed text', () => {
+    expect(checkAndrewMarkers([{ path: 'src/content/a.md', text: 'Scores [1 to 5]. [PRICE]. ANDREW: no bracket.' }], [page('a.html', '<p>[Andrew] [ANDREW]</p>')])).toEqual([]);
+  });
+  it('reports every marker in source with file and line, and each built page that has one', () => {
+    const f = checkAndrewMarkers(
+      [{ path: 'src/content/a.md', text: 'ok\n[ANDREW: effective date] and [ANDREW: rescore time]\n[ANDREW: unclosed' }],
+      [page('privacy/index.html', '<p>[ANDREW: one]</p><p>[ANDREW: two]</p>'), page('index.html', '<p>clean</p>')],
+    );
+    expect(f.map((x) => x.detail)).toEqual([
+      'src/content/a.md:2  [ANDREW: effective date]',
+      'src/content/a.md:2  [ANDREW: rescore time]',
+      'src/content/a.md:3  [ANDREW: unclosed',
+      'privacy/index.html: 2 markers, first [ANDREW: one]',
+    ]);
+  });
+  it('shortens long markers', () => {
+    const f = checkAndrewMarkers([{ path: 'a.md', text: `[ANDREW: ${'x'.repeat(200)}]` }], []);
+    expect(f[0]!.detail.length).toBeLessThan(100);
+    expect(f[0]!.detail.endsWith('...')).toBe(true);
+  });
+});
+
+describe('"[ANDREW" anywhere under src/', () => {
+  it('passes files without the string', () => {
+    expect(checkAndrewAnywhere([{ path: 'src/a.md', text: '[Andrew] ANDREW: no bracket. [PRICE]' }])).toEqual([]);
+  });
+  it('reports every variant the colon rule misses, in any file', () => {
+    const f = checkAndrewAnywhere([
+      { path: 'src/a.svg', text: '<text>[ANDREW]</text>\n[ANDREW - date] [ANDREW date]\n[ANDREW: x]' },
+    ]);
+    expect(f.map((x) => x.detail)).toEqual([
+      'src/a.svg:1  [ANDREW]',
+      'src/a.svg:2  [ANDREW - date]',
+      'src/a.svg:2  [ANDREW date]',
+      'src/a.svg:3  [ANDREW: x]',
+    ]);
   });
 });
 

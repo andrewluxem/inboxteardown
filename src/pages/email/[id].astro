@@ -3,8 +3,9 @@ import type { GetStaticPaths } from 'astro';
 import Base from '../../layouts/Base.astro';
 import Pips from '../../components/Pips.astro';
 import { DIMENSIONS, DIMENSION_KEYS, BANDS, TOTAL_MAX } from '../../config/rubric';
-import { mailto } from '../../config/site';
+import { SITE, mailto } from '../../config/site';
 import { industryLabel } from '../../config/industries';
+import { checkLabel } from '../../lib/checks';
 import { getAllEmails } from '../../lib/content';
 import type { FlatEmail } from '../../lib/brands';
 import { formatDateTimeMT, formatLong, formatMedium } from '../../lib/dates';
@@ -22,7 +23,7 @@ const s = score(email);
 const cap = cappingDimension(email);
 const low = lowestDimension(email);
 const kindLabel = { campaign: 'Campaign', welcome: 'Welcome', transactional: 'Transactional' } as const;
-const checkLabel: Record<CheckResult, string> = { pass: 'PASS', fail: 'FAIL', unverified: 'NOT VERIFIED' };
+const resultLabel: Record<CheckResult, string> = { pass: 'PASS', fail: 'FAIL', unverified: 'NOT VERIFIED' };
 
 const verdictWord = s.capped ? 'Capped' : BANDS[s.band].label;
 const reason = cap
@@ -98,8 +99,8 @@ const reason = cap
           <ul class="checks">
             {email.checks.map((c) => (
               <li class:list={['check', `check--${c.result}`]}>
-                <span class="check-result mono">{checkLabel[c.result]}</span>
-                <span class="check-name">{c.name}</span>
+                <span class="check-result mono">{resultLabel[c.result]}</span>
+                <span class="check-name" title={c.name}>{checkLabel(c.name)}</span>
                 {c.detail && <span class="check-detail">{c.detail}</span>}
               </li>
             ))}
@@ -108,7 +109,7 @@ const reason = cap
       </section>
 
       <p class="disagree">
-        Disagree with a score? Read <a href="/methodology/">how scores are made</a> or reply to the Monday email. <a href={mailto(`Rescore request: ${email.id}`)}>Brands can request a rescore</a>.
+        Disagree with a score? Read <a href="/methodology/">how scores are made</a> or email <a href={mailto(`Rescore request: ${email.id}`)}>{SITE.contactEmail}</a> to request a rescore.
       </p>
     </div>
   </div>
