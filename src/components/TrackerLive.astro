@@ -9,7 +9,7 @@ import { brandSlugs } from '../lib/brands';
 import { getAllEmails } from '../lib/content';
 import { dateRange, formatDateTimeMT, formatMedium, formatShort } from '../lib/dates';
 import { ogPath } from '../lib/og';
-import { trackerProgress } from '../lib/tracker';
+import { startedDefinition, trackerProgress } from '../lib/tracker';
 import { median } from '../lib/scoring';
 import type { Tracker } from '../lib/schemas';
 
@@ -58,8 +58,8 @@ const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatM
 
   <p class="eyebrow num">{t.title} · Day {dayN} of {calendar.length} · Updated {updated}</p>
   <h1 class="display bf-h1"><span class="accent">{launched} of {t.cohort_size}</span> brands have started Black Friday</h1>
-  {/* TODO(andrew): add one sentence defining what counts as "started" (first mention rule). */}
   <p class="lede bf-lede">Cohort of {t.cohort_size} brands, frozen {formatMedium(t.cohort_frozen)}. Tracking runs {formatShort(t.start)} to {formatShort(t.end)}.</p>
+  <p class="bf-def">{startedDefinition(t.start)}</p>
 
   <dl class="bf-stats">
     <div class="card stat">
@@ -162,6 +162,7 @@ const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatM
 <style>
   .bf-h1 { margin-top: 14px; max-width: 18ch; }
   .bf-lede { margin-top: 18px; }
+  .bf-def { margin-top: 12px; max-width: var(--measure); color: var(--ink-2); }
   .bf-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 32px; }
   .bf-stats .stat { display: flex; flex-direction: column; }
   .bf-stats .label { order: -1; margin-bottom: 6px; }

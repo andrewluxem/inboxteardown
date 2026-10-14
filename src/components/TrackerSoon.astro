@@ -3,6 +3,7 @@
 // where to get an alert. noindex; not in the sitemap or navigation.
 import Base from '../layouts/Base.astro';
 import { formatShort } from '../lib/dates';
+import { startedDefinition } from '../lib/tracker';
 
 interface Props { start: string }
 const { start } = Astro.props;
@@ -12,6 +13,7 @@ const year = start.slice(0, 4);
   <p class="eyebrow num">Black Friday {year} tracker</p>
   <h1 class="display soon-h1">Starts <span class="accent">{formatShort(start)}</span></h1>
   <p class="lede soon-lede">From {formatShort(start)}, this page tracks which brands in our inbox have started Black Friday email, updated daily.</p>
+  <p class="soon-def">{startedDefinition(start)}</p>
 
   <section class="section cta-band dark" aria-labelledby="soon-cta">
     <div>
@@ -25,6 +27,7 @@ const year = start.slice(0, 4);
 <style>
   .soon-h1 { margin-top: 14px; max-width: 18ch; }
   .soon-lede { margin-top: 18px; }
+  .soon-def { margin-top: 12px; max-width: var(--measure); color: var(--ink-2); }
   .cta-band { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px 40px; padding: 32px; margin-top: 56px; }
   .cta-band h2 { margin-top: 8px; max-width: 22ch; }
 </style>
