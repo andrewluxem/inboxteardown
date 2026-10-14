@@ -43,10 +43,9 @@ const note = NOTES[list];
   .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 </style>
 <script>
-  // The endpoint redirects back with ?signup=invalid or ?signup=error when a signup did not go through.
+  // The endpoint redirects back with ?signup=invalid for a bad address; other failures go to /signed-up/?signup=error.
   const outcomes: Record<string, string> = {
     invalid: "That email address doesn't look right.",
-    error: 'Something went wrong. Please try again in a minute.',
   };
   const message = outcomes[new URLSearchParams(location.search).get('signup') ?? ''];
   for (const form of document.querySelectorAll<HTMLFormElement>('form[data-signup]')) {
