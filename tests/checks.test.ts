@@ -1,26 +1,12 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
-import { CHECK_LABELS, checkLabel } from '../src/lib/checks';
+import { PUBLIC_CHECK_NAMES, isPublicCheckName } from '../src/lib/checks';
 
 const root = new URL('../', import.meta.url);
 
-/** The "Check" column of the methodology ceiling table, backticks removed. */
-function methodologyCheckCells(): string[] {
-  const md = readFileSync(new URL('src/content/pages/methodology.md', root), 'utf8');
-  const lines = md.split('\n');
-  const start = lines.findIndex((l) => /^\|\s*Check\s*\|/.test(l));
-  expect(start, 'methodology ceiling table not found').toBeGreaterThan(-1);
-  const rows = [];
-  for (const line of lines.slice(start + 2)) {
-    if (!line.startsWith('|')) break;
-    rows.push(line.split('|')[1]!.trim().replace(/`/g, ''));
-  }
-  return rows;
-}
-
 /** Every check name used in the scoreboard content files. */
-function fixtureCheckNames(): string[] {
+function contentCheckNames(): string[] {
   const dir = new URL('src/content/scoreboard/', root);
   const names = new Set<string>();
   for (const f of readdirSync(dir).filter((f) => f.endsWith('.md'))) {
@@ -30,22 +16,26 @@ function fixtureCheckNames(): string[] {
   return [...names];
 }
 
-describe('check labels', () => {
-  it('maps known names and falls back to the raw name', () => {
-    expect(checkLabel('secondary_links_resolve')).toBe('Other links in the email are broken');
-    expect(checkLabel('some_new_check')).toBe('some_new_check');
-  });
-
-  it('has a check name for every row of the methodology ceiling table', () => {
-    const labels = new Set(Object.values(CHECK_LABELS));
-    const cells = methodologyCheckCells();
-    expect(cells.length).toBeGreaterThan(10);
-    expect(cells.filter((c) => !labels.has(c))).toEqual([]);
-  });
-
-  it('has a label for every check name in the current content', () => {
-    const names = fixtureCheckNames();
+describe('check names', () => {
+  it('uses only the public check names in the content', () => {
+    const names = contentCheckNames();
     expect(names.length).toBeGreaterThan(0);
-    expect(names.filter((n) => !(n in CHECK_LABELS))).toEqual([]);
+    expect(names.filter((n) => !isPublicCheckName(n))).toEqual([]);
+  });
+
+  it('rejects scorer ids and failure-style labels', () => {
+    expect(isPublicCheckName('DMARC alignment')).toBe(true);
+    expect(isPublicCheckName('dmarc_aligned')).toBe(false);
+    expect(isPublicCheckName('The sender fails DMARC alignment')).toBe(false);
+  });
+
+  // A name sits next to PASS and NOT VERIFIED too, so it may not describe a failure.
+  it('has no public name that reads as a failure', () => {
+    const failure = /\b(fails?|failed|broken|no|not|lacks?|missing|without|over|smaller|below|wider|unfilled|compete)\b/i;
+    expect(PUBLIC_CHECK_NAMES.filter((n) => failure.test(n))).toEqual([]);
+  });
+
+  it('names no sender authentication other than DMARC', () => {
+    expect(PUBLIC_CHECK_NAMES.filter((n) => /\b(SPF|DKIM)\b/.test(n))).toEqual([]);
   });
 });
