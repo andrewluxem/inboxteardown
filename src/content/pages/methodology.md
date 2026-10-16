@@ -150,6 +150,14 @@ Held-back emails are not added to past boards later. Once a check passes review,
 
 Each screenshot is captured at phone width from the copy of the email we received, with our own name and email address masked. Some images may not load if a brand's image server blocks automated viewing. A brand can ask for a screenshot to be removed by emailing {contactEmail}.
 
+## Corrections and removal
+
+Send privacy, accuracy and removal requests to {contactEmail}. Brands, subscribers and anyone named or shown in an email can write.
+
+If a request raises a credible privacy or accuracy issue, we hide the affected screenshot, scorecard or brand within one business day, then review it. After the review we restore it, correct it or remove it for good. Every decision is logged with its date and reason.
+
+Screenshots and scores reflect the copy of the email we received. If a brand sent different versions to different subscribers, ours may not match the one you saw.
+
 ## Corrections and rescores
 
 To request a rescore or report an error, email {contactEmail} with the subject "Rescore request:" followed by the email's id. Each scorecard has a link that fills this in. When a score is corrected, the scorecard notes the correction and its date.
