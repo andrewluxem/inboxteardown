@@ -7,6 +7,35 @@ import { SCORE_MAX, SCORE_MIN } from '../config/rubric';
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+/** Public host suffix of the Vercel Blob store that holds screenshots. */
+export const BLOB_HOST_SUFFIX = '.public.blob.vercel-storage.com';
+
+/**
+ * A screenshot reference: a path under /shots/ (fixtures, files in
+ * public/shots/) or an https URL on a Vercel Blob public host
+ * (*.public.blob.vercel-storage.com) with no credentials, port or empty
+ * path. Any other URL is refused. Same rule as the scorer's
+ * site_schema_check.py.
+ */
+export function isScreenshotRef(v: string): boolean {
+  if (!v || /\s/.test(v)) return false;
+  if (/^\/shots\/\S+$/.test(v)) return true;
+  let u: URL;
+  try {
+    u = new URL(v);
+  } catch {
+    return false;
+  }
+  return (
+    u.protocol === 'https:' &&
+    u.hostname.endsWith(BLOB_HOST_SUFFIX) &&
+    !u.username &&
+    !u.password &&
+    u.port === '' &&
+    u.pathname.length > 1
+  );
+}
+
 /**
  * YAML parses unquoted `2026-10-07` as a Date at UTC midnight. Normalize to a
  * plain `YYYY-MM-DD` string so calendar dates never drift across time zones.
@@ -60,13 +89,13 @@ const emailBase = z.strictObject({
   themes: z.array(z.string().min(1)).default([]),
   dimensions: dimensionsSchema,
   checks: z.array(checkSchema).default([]),
-  // A local path under /shots/ or an https URL (the public Blob store). Real
-  // screenshots go to Blob, never into git.
+  // A local path under /shots/ or an https URL on the public Blob store
+  // (isScreenshotRef). Real screenshots go to Blob, never into git.
   screenshot: z
     .string()
-    .regex(
-      /^(\/shots\/|https:\/\/)[^\s]+$/,
-      'screenshot must be a path under /shots/ or an https URL',
+    .refine(
+      isScreenshotRef,
+      `screenshot must be a path under /shots/ or an https URL on *${BLOB_HOST_SUFFIX}`,
     )
     .nullable()
     .default(null),

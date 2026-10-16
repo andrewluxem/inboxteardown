@@ -85,8 +85,22 @@ describe('content schemas reject other contract violations', () => {
   it('rejects a check result outside pass, fail, unverified', () => {
     expect(scoreboardSchema.safeParse(withEmail({ checks: [{ name: 'Links resolve', result: 'warn' }] })).success).toBe(false);
   });
-  it('rejects a screenshot that is neither /shots/ nor https', () => {
-    expect(scoreboardSchema.safeParse(withEmail({ screenshot: 'http://example.com/a.png' })).success).toBe(false);
+  it.each([
+    'http://example.com/a.png',
+    'https://example.com/a.png',
+    'https://shots.example.com/x.png',
+    'http://abc.public.blob.vercel-storage.com/x.webp',
+    'https://public.blob.vercel-storage.com/x.webp',
+    'https://abc.public.blob.vercel-storage.com.evil.example/x.webp',
+    'https://u@abc.public.blob.vercel-storage.com/x.webp',
+    'https://abc.public.blob.vercel-storage.com:8443/x.webp',
+    'https://abc.public.blob.vercel-storage.com/',
+    'https://abc.blob.vercel-storage.com/x.webp',
+    'shots/2026-10-05/a.webp',
+    '/shots/',
+    '',
+  ])('rejects the screenshot %j', (screenshot) => {
+    expect(scoreboardSchema.safeParse(withEmail({ screenshot })).success).toBe(false);
   });
 });
 
@@ -102,8 +116,13 @@ describe('rubric v1 contract additions', () => {
     );
     expect(r.error?.issues ?? []).toEqual([]);
   });
-  it('accepts a Blob screenshot URL', () => {
-    const r = scoreboardSchema.safeParse(withEmail({ screenshot: 'https://shots.public.blob.vercel-storage.com/2026-10-06-gap-1.png' }));
+  it.each([
+    'https://shots.public.blob.vercel-storage.com/2026-10-06-gap-1.png',
+    'https://fnlmdoepsgemyryt.public.blob.vercel-storage.com/shots/2026-10-14/2026-10-14-wayfair-1.webp',
+    '/shots/2026-10-05/cinder-kitchen-1.png',
+    null,
+  ])('accepts the screenshot %j', (screenshot) => {
+    const r = scoreboardSchema.safeParse(withEmail({ screenshot }));
     expect(r.error?.issues ?? []).toEqual([]);
   });
   it('rejects a cap with no failed check behind it', () => {
