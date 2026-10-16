@@ -10,7 +10,8 @@
     "check": "astro check",
     "test": "vitest run",
     "screenshots": "node scripts/screenshots.mjs",
-    "prelaunch": "node scripts/prelaunch-check.ts"
+    "prelaunch": "node scripts/prelaunch-check.ts",
+    "csp:hashes": "node scripts/csp-hashes.ts"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

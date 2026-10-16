@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'sha256-IXK97ImUkkHIF79oqj1ojNyTu+toUHlHYcdTIogJZYM=' 'sha256-NKN3pofE4SdqGDU1OV5dNCh8Z91LidO25VFOej3wlYQ=' 'sha256-VbHQ0XCWO2jIQDdf6mPsAKPvSs5orA/VucJ+AyuKCGU=' 'sha256-aXI5QFyrkNfmKTunx4MfsSLngbAyVGQzz12Hg7qC0AA=' 'sha256-o38oXzO4c2iT5Ighpvg1bDI3xAdM0Dn5yw4sye/KDRk='; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.public.blob.vercel-storage.com; font-src 'self'; connect-src 'self'; form-action 'self' https://fpqyuzkrshokqxtjtffi.supabase.co; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+        },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    }
+  ]
+}
