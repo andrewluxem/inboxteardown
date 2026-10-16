@@ -1,0 +1,43 @@
+# Pull requests from the nightly publisher (head branch auto/*) may change
+# only src/content/scoreboard/. Any other changed path (including the old
+# path of a rename) fails this check; every other PR passes. Runs no PR code:
+# the file list comes from the GitHub API.
+name: auto-pr-scope
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  auto-pr-scope:
+    runs-on: ubuntu-latest
+    steps:
+      - name: auto/ PRs change only src/content/scoreboard/
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          case "$HEAD_REF" in
+            auto/*) ;;
+            *) echo "head branch $HEAD_REF is not auto/*: nothing to check"; exit 0 ;;
+          esac
+          files=$(gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/files" \
+            --jq '.[] | .filename, (.previous_filename // empty)')
+          if [ -z "$files" ]; then
+            echo "::error::no changed files listed for PR #$PR_NUMBER"
+            exit 1
+          fi
+          outside=$(printf '%s\n' "$files" | sort -u | grep -v '^src/content/scoreboard/' || true)
+          if [ -n "$outside" ]; then
+            printf '%s\n' "$outside" | while IFS= read -r f; do
+              echo "::error file=$f::auto/ PRs may change only src/content/scoreboard/"
+            done
+            exit 1
+          fi
+          echo "all $(printf '%s\n' "$files" | sort -u | wc -l) changed files are under src/content/scoreboard/"
