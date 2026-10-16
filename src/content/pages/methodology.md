@@ -146,6 +146,10 @@ Some scored emails are not published on the scoreboard:
 
 Held-back emails are not added to past boards later. Once a check passes review, it applies to boards from then on.
 
+## Screenshots
+
+Each screenshot is captured at phone width from the copy of the email we received, with our own name and email address masked. Some images may not load if a brand's image server blocks automated viewing. A brand can ask for a screenshot to be removed by emailing {contactEmail}.
+
 ## Corrections and rescores
 
 To request a rescore or report an error, email {contactEmail} with the subject "Rescore request:" followed by the email's id. Each scorecard has a link that fills this in. When a score is corrected, the scorecard notes the correction and its date.

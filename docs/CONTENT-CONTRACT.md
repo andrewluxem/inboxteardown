@@ -37,7 +37,7 @@ emails:                             # at least one
     checks:                            # optional, defaults to []
       - { name: Other links, result: fail, detail: "1 of 9 links returns 404" }
       - { name: Unsubscribe link, result: pass }
-    screenshot: null                   # or an https:// Blob URL (or "/shots/<file>" for fixtures)
+    screenshot: null                   # or https://<store>.public.blob.vercel-storage.com/... (or "/shots/<file>" for fixtures)
     correction:                        # optional; set when a published score changes
       date: 2026-10-08
       note: "Technical hygiene raised from 1 to 3: the CTA link was fixed before most opens." 
@@ -56,9 +56,11 @@ Rules:
   Use `unverified` when a check could not reach a verdict (HTTP 403 or 429, a
   timeout, a redirect with no Location header, an image-only footer). Rubric
   v1 never lowers a score for it.
-- `screenshot` is `null`, a path under `/shots/`, or an `https://` URL. Real
-  screenshots live in the public Blob store and are referenced by URL, never
-  committed.
+- `screenshot` is `null`, a path under `/shots/`, or an `https://` URL whose
+  host ends with `.public.blob.vercel-storage.com` (no credentials, port or
+  empty path). Any other URL fails the build. Real screenshots live in the
+  public Blob store and are referenced by URL, never committed. The scorer's
+  `site_schema_check.py` applies the same rule before handing a board over.
 - Subjects are rendered as text. Merge tags such as `{{FirstName}}` show
   literally, which is intended. Quote any subject that starts with `{`, `[`,
   `*`, `!`, or contains `: `.

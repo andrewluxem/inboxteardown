@@ -10,6 +10,7 @@ import type { FlatEmail } from '../../lib/brands';
 import { formatDateTimeMT, formatLong, formatMedium } from '../../lib/dates';
 import { cappingDimension, lowestDimension, score } from '../../lib/scoring';
 import type { CheckResult } from '../../lib/schemas';
+import { screenshotSize } from '../../lib/shots';
 
 export const getStaticPaths = (async () => {
   const emails = await getAllEmails();
@@ -23,6 +24,8 @@ const cap = cappingDimension(email);
 const low = lowestDimension(email);
 const kindLabel = { campaign: 'Campaign', welcome: 'Welcome', transactional: 'Transactional' } as const;
 const resultLabel: Record<CheckResult, string> = { pass: 'PASS', fail: 'FAIL', unverified: 'NOT VERIFIED' };
+
+const shotSize = email.screenshot ? await screenshotSize(email.screenshot) : null;
 
 const verdictWord = s.capped ? 'Capped' : BANDS[s.band].label;
 const reason = cap
@@ -53,9 +56,19 @@ const reason = cap
         </dd></div>
       </dl>
 
-      {email.screenshot ? (
+      {email.screenshot && shotSize ? (
         <figure class="shot">
-          <img src={email.screenshot} alt={`Screenshot of the ${email.brand} email "${email.subject}"`} loading="lazy" width="600" />
+          <div class="shot-frame" tabindex="0" role="region" aria-label="Email screenshot (scrolls)">
+            <img
+              src={email.screenshot}
+              alt={`Screenshot of the ${email.brand} email: ${email.subject}`}
+              width={shotSize.width}
+              height={shotSize.height}
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <figcaption class="shot-cap">As received, at phone width. <a href="/methodology/#screenshots">About screenshots</a></figcaption>
         </figure>
       ) : (
         <div class="shot shot--empty"><p class="eyebrow">No screenshot for this send</p></div>
@@ -130,7 +143,11 @@ const reason = cap
   .meta .chip { min-height: 28px; padding: 2px 8px; }
 
   .shot { margin-top: 16px; border: 1px solid var(--rule); background: var(--surface); }
-  .shot img { width: 100%; height: auto; }
+  /* Long emails scroll inside the frame, so the page stays short on a phone. */
+  .shot-frame { max-height: min(75vh, 720px); overflow-y: auto; overscroll-behavior: contain; background: #fff; }
+  .shot-frame:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .shot img { display: block; width: 100%; max-width: 375px; height: auto; margin-inline: auto; }
+  .shot-cap { padding: 8px 12px; border-top: 1px solid var(--rule-2); font-size: var(--text-sm); color: var(--ink-2); }
   .shot--empty { min-height: 360px; display: grid; place-items: center; background: var(--header-bg-2); border-style: dashed; border-color: var(--rule); }
 
   .verdict { padding: 24px 28px 28px; }
