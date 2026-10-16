@@ -8,6 +8,7 @@ import { SITE, SITE_HOST } from '../src/config/site.ts';
 import {
   checkAndrewAnywhere,
   checkAndrewMarkers,
+  checkCspHashes,
   checkFixtureBrands,
   checkFooterContact,
   checkOgImages,
@@ -18,6 +19,7 @@ import {
   checkScriptHosts,
   checkSignupEndpoint,
   checkTodos,
+  cspFromVercelJson,
   type Failure,
   type Page,
   type TextFile,
@@ -51,9 +53,12 @@ const boards = contentFiles
 const distPaths = walk(DIST).map((f) => relative(DIST, f));
 const pages: Page[] = distPaths.filter((p) => p.endsWith('.html')).map((p) => ({ path: p, html: readFileSync(join(DIST, p), 'utf8') }));
 const robotsPath = join(DIST, 'robots.txt');
+const vercelJsonPath = join(ROOT, 'vercel.json');
+const csp = existsSync(vercelJsonPath) ? cspFromVercelJson(readFileSync(vercelJsonPath, 'utf8')) : undefined;
 
 const rules: [string, Failure[]][] = [
   ['No third-party scripts (only the site and Vercel insights)', checkScriptHosts(pages, SITE_HOST)],
+  ['Every inline script is allowed by the vercel.json CSP', checkCspHashes(pages, csp)],
   ['No TODO(andrew) left in src/', checkTodos(srcFiles)],
   ['No bracketed placeholders in built pages', checkPlaceholders(pages, senderCopyBrackets(boards))],
   ['No [ANDREW: ...] markers in src/ or built pages', checkAndrewMarkers(srcFiles, pages)],

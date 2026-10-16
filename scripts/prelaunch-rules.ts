@@ -1,5 +1,6 @@
 // Prelaunch rules. Pure functions over file contents so each can be unit
 // tested; scripts/prelaunch-check.ts gathers the inputs and reports.
+import { createHash } from 'node:crypto';
 
 export interface Failure {
   detail: string;
@@ -93,6 +94,56 @@ export function checkScriptHosts(pages: Page[], siteHost: string): Failure[] {
   return pages.flatMap((p) =>
     thirdPartyScripts(p.html, siteHost).map((src) => ({ detail: `${p.path}: <script src="${src}"> loads from outside ${siteHost}` })),
   );
+}
+
+// ---------- Content-Security-Policy ----------
+
+/** Script types the browser runs (others, like application/ld+json, are data). */
+const JS_TYPE = /^(|module|(text|application)\/(x-)?(java|ecma)script)$/i;
+
+/** The CSP source ('sha256-...') of every inline script the browser would run. */
+export function inlineScriptHashes(html: string): string[] {
+  const out: string[] = [];
+  for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    const [, attrs, body] = m;
+    if (/\bsrc\s*=/i.test(attrs) || !body) continue;
+    const type = /\btype\s*=\s*["']?([^"'\s>]*)/i.exec(attrs)?.[1] ?? '';
+    if (!JS_TYPE.test(type)) continue;
+    out.push(`'sha256-${createHash('sha256').update(body, 'utf8').digest('base64')}'`);
+  }
+  return out;
+}
+
+/** The Content-Security-Policy value vercel.json sets for every path ("/(.*)"). */
+export function cspFromVercelJson(text: string): string | undefined {
+  const config = JSON.parse(text) as { headers?: { source: string; headers: { key: string; value: string }[] }[] };
+  const all = config.headers?.find((h) => h.source === '/(.*)');
+  return all?.headers.find((h) => h.key.toLowerCase() === 'content-security-policy')?.value;
+}
+
+/** The sources of one CSP directive. */
+export function cspSources(csp: string, directive: string): string[] {
+  const d = csp.split(';').map((x) => x.trim().split(/\s+/)).find(([name]) => name === directive);
+  return d ? d.slice(1) : [];
+}
+
+/**
+ * Every inline script in dist/ must be allowed by a hash in the CSP's
+ * script-src, or the browser refuses to run it. After a script changes, run
+ * `npm run csp:hashes -- --write` to update vercel.json.
+ */
+export function checkCspHashes(pages: Page[], csp: string | undefined): Failure[] {
+  if (!csp) return [{ detail: 'vercel.json sets no Content-Security-Policy for "/(.*)"' }];
+  const allowed = new Set(cspSources(csp, 'script-src'));
+  const missing = new Map<string, string[]>();
+  for (const p of pages) {
+    for (const h of inlineScriptHashes(p.html)) {
+      if (!allowed.has(h)) missing.set(h, [...(missing.get(h) ?? []), p.path]);
+    }
+  }
+  return [...missing].map(([h, paths]) => ({
+    detail: `inline script ${h} on ${paths.length} pages (${list(paths)}) is not in script-src; run npm run csp:hashes -- --write`,
+  }));
 }
 
 // ---------- Source and content ----------
