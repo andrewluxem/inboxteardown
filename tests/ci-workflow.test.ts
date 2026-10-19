@@ -1,5 +1,5 @@
 // .github/workflows/ci.yml: the steps it runs, and its prelaunch gate run with
-// bash and a stub npm that prints a canned prelaunch report.
+// bash (with -e, as Actions runs it) and a stub npm that prints a canned prelaunch report.
 import { execFileSync } from 'node:child_process';
 import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -21,7 +21,7 @@ function runGate(output: string, exit: number): { code: number; out: string } {
   writeFileSync(join(dir, 'npm'), `#!/bin/sh\ncat "${dir}/report"\nexit ${exit}\n`);
   chmodSync(join(dir, 'npm'), 0o755);
   try {
-    return { code: 0, out: execFileSync('bash', ['-c', gate.run!], { cwd: dir, env: { PATH: `${dir}:${process.env.PATH}` }, encoding: 'utf8' }) };
+    return { code: 0, out: execFileSync('bash', ['-e', '-c', gate.run!], { cwd: dir, env: { PATH: `${dir}:${process.env.PATH}` }, encoding: 'utf8' }) };
   } catch (e) {
     const err = e as { status: number; stdout: string };
     return { code: err.status, out: err.stdout };
@@ -35,7 +35,7 @@ describe('ci workflow', () => {
   });
   it('runs npm ci, vitest, astro check, build and prelaunch in order', () => {
     expect(steps.map((s) => s.run?.split('\n')[0]).filter(Boolean)).toEqual([
-      'npm ci', 'npx vitest run', 'npx astro check', 'npm run build', 'set -uo pipefail',
+      'npm ci', 'npx vitest run', 'npx astro check', 'npm run build', '# Actions runs this with bash -e; prelaunch\'s exit code is judged below.',
     ]);
     expect(gate.run).toContain('npm run prelaunch');
   });

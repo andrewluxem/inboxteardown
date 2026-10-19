@@ -25,7 +25,8 @@ jobs:
       - run: npm run build
       - name: prelaunch (only the signup endpoint rule may fail)
         run: |
-          set -uo pipefail
+          # Actions runs this with bash -e; prelaunch's exit code is judged below.
+          set +e -uo pipefail
           npm run prelaunch | tee prelaunch.log
           code=${PIPESTATUS[0]}
           if ! grep -q '^Prelaunch check:' prelaunch.log; then
