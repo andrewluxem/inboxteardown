@@ -1,0 +1,44 @@
+# Tests, type check, build and prelaunch on every pull request. Prelaunch may
+# fail only on its "PUBLIC_SIGNUP_ENDPOINT set at build time" rule: CI builds
+# without the Vercel env, so signup forms are always unset here. Any other
+# failed rule fails the job.
+name: ci
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx vitest run
+      - run: npx astro check
+      - run: npm run build
+      - name: prelaunch (only the signup endpoint rule may fail)
+        run: |
+          set -uo pipefail
+          npm run prelaunch | tee prelaunch.log
+          code=${PIPESTATUS[0]}
+          if ! grep -q '^Prelaunch check:' prelaunch.log; then
+            echo "::error::prelaunch did not run (exit $code)"
+            exit 1
+          fi
+          other=$(grep '^FAIL' prelaunch.log | grep -v '^FAIL  PUBLIC_SIGNUP_ENDPOINT set at build time' || true)
+          if [ -n "$other" ]; then
+            printf '%s\n' "$other" | while IFS= read -r line; do echo "::error::prelaunch: $line"; done
+            exit 1
+          fi
+          if [ "$code" -ne 0 ] && ! grep -q '^FAIL  PUBLIC_SIGNUP_ENDPOINT set at build time' prelaunch.log; then
+            echo "::error::prelaunch exited $code with no failed rule"
+            exit 1
+          fi
+          echo "prelaunch: no failures beyond PUBLIC_SIGNUP_ENDPOINT"
