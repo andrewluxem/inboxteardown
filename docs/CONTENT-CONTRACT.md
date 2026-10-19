@@ -156,11 +156,13 @@ Markdown body.
 The tracker page is built from this file alone. It is served at
 `/tracker/<slug>/`.
 
-Before day 1 (no file yet, or a file with an empty `days` list) the page is
-the pre-start page: "Starts Nov 2", what counts as started, the brands on the
-scoreboard now, and the signup form. With no file it is public (indexable, in
-the sitemap, nav and home page); a file with `published: false` makes it a
-noindex preview either way. The page and its OG image never show "Day 0".
+The page is always public: indexable, in the sitemap and the nav, and linked
+from the home page. `published` only decides whether the data shows. Until
+the file says `published: true` and has at least one day (or while there is
+no file), the page is the pre-start page: "Starts Nov 2", what counts as
+started, the brands on the scoreboard now, and the signup form, with no
+banner. The page, its OG image and the home card never show "Day 0" or
+unpublished numbers.
 
 ```yaml
 ---
@@ -169,7 +171,7 @@ title: "Black Friday 2026 tracker"
 start: 2026-11-02               # the current tracker must match CURRENT_TRACKER_START in src/lib/content.ts
 end: 2026-11-30
 cohort_frozen: 2026-10-26
-published: false              # false: page builds with noindex, a preview banner, and no nav or sitemap entry
+published: false              # false: don't show data yet; the page stays public and renders the pre-start state
 cohort_size: 11
 updated_at: 2026-11-20T14:00:00Z   # optional (addition): shown as "Updated ..." in the eyebrow
 october_avg_score: 29.1            # optional (addition): baseline for the "avg score" stat

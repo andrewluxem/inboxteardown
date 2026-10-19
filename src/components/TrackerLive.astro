@@ -1,8 +1,6 @@
 ---
-// The tracker page once it has a day of data (before that, TrackerSoon),
-// built from its content file alone. While `published: false`
-// the page still builds, but with noindex, a preview banner, and no nav or
-// sitemap entry (see astro.config.mjs and Header.astro).
+// The tracker page once its file is published with a day of data (until then,
+// TrackerSoon), built from its content file alone.
 import Base from '../layouts/Base.astro';
 import { industryLabel } from '../config/industries';
 import { TOTAL_MAX } from '../config/rubric';
@@ -36,13 +34,7 @@ const catMax = Math.max(1, ...t.categories.map((c) => Math.abs(c.sends_vs_baseli
 const categories = [...t.categories].sort((a, b) => b.sends_vs_baseline - a.sends_vs_baseline);
 const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatMedium(latest.date) : 'not yet';
 ---
-<Base title={t.title} description={`${launched} of ${t.cohort_size} tracked brands have started Black Friday email. Updated daily.`} noindex={!t.published} ogImage={ogPath.tracker(t.slug)}>
-  {!t.published && (
-    <div class="banner" slot="banner" role="note">
-      <div class="wrap">Preview, not public. This page is excluded from the sitemap and navigation and marked noindex.</div>
-    </div>
-  )}
-
+<Base title={t.title} description={`${launched} of ${t.cohort_size} tracked brands have started Black Friday email. Updated daily.`} ogImage={ogPath.tracker(t.slug)}>
   <p class="eyebrow num">{t.title} · {dayLabel(t.start, t)} · Updated {updated}</p>
   <h1 class="display bf-h1"><span class="accent">{launched} of {t.cohort_size}</span> brands have started Black Friday</h1>
   <p class="lede bf-lede">Cohort of {t.cohort_size} brands, frozen {formatMedium(t.cohort_frozen)}. Tracking runs {formatShort(t.start)} to {formatShort(t.end)}.</p>

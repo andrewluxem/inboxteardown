@@ -21,14 +21,19 @@ export function unknownTrackerBrands(t: Pick<Tracker, 'brands'>, boardSlugs: Ite
   return t.brands.map((b) => b.brand_slug).filter((slug) => !known.has(slug));
 }
 
-/** True once the tracker has a day of data; before that the page is the pre-start page. */
-export function hasStarted(t: Tracker | undefined): boolean {
-  return !!t && t.days.length > 0;
+/**
+ * True when the tracker's data may be shown: the file says `published: true`
+ * and has a day of data. Otherwise every surface (page, OG image, home card)
+ * shows the pre-start state. `published: false` means "don't show data yet",
+ * nothing more: the page stays public either way.
+ */
+export function showsData(t: Tracker | undefined): t is Tracker {
+  return !!t && t.published && t.days.length > 0;
 }
 
-/** "Starts Nov 2" before day 1, then "Day 3 of 29". Never "Day 0". */
+/** "Starts Nov 2" until data may be shown, then "Day 3 of 29". Never "Day 0". */
 export function dayLabel(start: string, t?: Tracker): string {
-  if (!t || !hasStarted(t)) return `Starts ${formatShort(start)}`;
+  if (!showsData(t)) return `Starts ${formatShort(start)}`;
   const { dayN, totalDays } = trackerProgress(t);
   return `Day ${dayN} of ${totalDays}`;
 }

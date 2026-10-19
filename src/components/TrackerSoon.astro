@@ -1,8 +1,8 @@
 ---
-// The tracker page before day 1: no content file yet, or one with no days.
-// Evergreen only: when tracking starts, what counts as started, the brands we
-// track now, and how to get notified. Public (indexable, in the sitemap and
-// nav) unless a content file exists with `published: false`.
+// The tracker page until its data may be shown: no content file yet, one with
+// `published: false`, or one with no days. Evergreen only: when tracking
+// starts, what counts as started, the brands we track now, and how to get
+// notified. Always public (indexable, in the sitemap and nav), no banner.
 import Base from '../layouts/Base.astro';
 import SignupForm from './SignupForm.astro';
 import { CURRENT_TRACKER, getTrackedBrands } from '../lib/content';
@@ -13,22 +13,15 @@ import type { Tracker } from '../lib/schemas';
 
 interface Props {
   start: string;
-  /** The content file, when one exists but has no days yet. */
+  /** The content file, when one exists (its data is never shown here). */
   tracker?: Tracker;
 }
 const { start, tracker } = Astro.props;
 const year = start.slice(0, 4);
 const title = tracker?.title ?? `Black Friday ${year} tracker`;
-const isPublic = tracker ? tracker.published : true;
 const brands = await getTrackedBrands();
 ---
-<Base title={title} description={`Which brands have started Black Friday ${year} email. Tracking starts ${formatShort(start)}.`} noindex={!isPublic} ogImage={ogPath.tracker(tracker?.slug ?? CURRENT_TRACKER)}>
-  {!isPublic && (
-    <div class="banner" slot="banner" role="note">
-      <div class="wrap">Preview, not public. This page is excluded from the sitemap and navigation and marked noindex.</div>
-    </div>
-  )}
-
+<Base title={title} description={`Which brands have started Black Friday ${year} email. Tracking starts ${formatShort(start)}.`} ogImage={ogPath.tracker(tracker?.slug ?? CURRENT_TRACKER)}>
   <p class="eyebrow num">{title}</p>
   <h1 class="display soon-h1">Starts <span class="accent">{formatShort(start)}</span></h1>
   <p class="lede soon-lede">From {formatShort(start)}, this page tracks which brands in our inbox have started Black Friday email, updated daily.</p>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { trackerSchema, type Tracker } from '../src/lib/schemas';
-import { blackFridayDates, dayLabel, hasStarted, launchGrid, unknownTrackerBrands } from '../src/lib/tracker';
+import { blackFridayDates, dayLabel, launchGrid, showsData, unknownTrackerBrands } from '../src/lib/tracker';
 
 describe('Black Friday dates', () => {
   it('is the day after the fourth Thursday of November, with Cyber Monday 3 days later', () => {
@@ -44,13 +44,19 @@ describe('day label', () => {
   it('says "Starts Nov 2" before day 1, never "Day 0"', () => {
     expect(dayLabel('2026-11-02')).toBe('Starts Nov 2');
     expect(dayLabel('2026-11-02', base)).toBe('Starts Nov 2');
-    expect(hasStarted(base)).toBe(false);
-    expect(hasStarted(undefined)).toBe(false);
+    expect(showsData(base)).toBe(false);
+    expect(showsData(undefined)).toBe(false);
   });
-  it('counts days from the start once there is data', () => {
-    const t = { ...base, days: [{ date: '2026-11-04', launched_cumulative: 1, sends: 4, sends_vs_baseline: 0 }] };
-    expect(hasStarted(t)).toBe(true);
+  const days = [{ date: '2026-11-04', launched_cumulative: 1, sends: 4, sends_vs_baseline: 0 }];
+  it('stays "Starts Nov 2" while unpublished, even with data', () => {
+    expect(showsData({ ...base, days })).toBe(false);
+    expect(dayLabel(base.start, { ...base, days })).toBe('Starts Nov 2');
+  });
+  it('counts days from the start once published with data', () => {
+    const t = { ...base, published: true, days };
+    expect(showsData(t)).toBe(true);
     expect(dayLabel(t.start, t)).toBe('Day 3 of 29');
+    expect(dayLabel(t.start, { ...t, days: [] })).toBe('Starts Nov 2');
   });
 });
 

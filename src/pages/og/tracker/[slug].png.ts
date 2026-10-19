@@ -3,10 +3,11 @@ import { CURRENT_TRACKER, CURRENT_TRACKER_START, getTrackers } from '../../../li
 import { formatShort } from '../../../lib/dates';
 import { pngResponse, renderOgPng } from '../../../lib/og';
 import type { Tracker } from '../../../lib/schemas';
-import { dayLabel, hasStarted, trackerProgress } from '../../../lib/tracker';
+import { dayLabel, showsData, trackerProgress } from '../../../lib/tracker';
 
 // One image per tracker page, including the pre-start page built while the
-// current tracker has no content file. Before day 1 it says "Starts Nov 2".
+// current tracker has no content file. Until data may be shown (published
+// with a day of data) it says "Starts Nov 2".
 export const getStaticPaths = (async () => {
   const trackers = await getTrackers();
   const paths: { params: { slug: string }; props: { tracker?: Tracker } }[] =
@@ -21,7 +22,7 @@ export async function GET({ props }: APIContext<{ tracker?: Tracker }>) {
   const t = props.tracker;
   const start = t?.start ?? CURRENT_TRACKER_START;
   const title = t?.title ?? `Black Friday ${start.slice(0, 4)} tracker`;
-  if (!t || !hasStarted(t)) {
+  if (!showsData(t)) {
     return pngResponse(
       await renderOgPng({
         eyebrow: title,

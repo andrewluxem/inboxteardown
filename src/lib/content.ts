@@ -96,21 +96,6 @@ export async function getTracker(slug = CURRENT_TRACKER): Promise<CollectionEntr
   return (await getTrackers()).find((t) => t.data.slug === slug);
 }
 
-export async function isTrackerPublished(slug = CURRENT_TRACKER): Promise<boolean> {
-  return (await getTracker(slug))?.data.published ?? false;
-}
-
-/**
- * Whether a tracker page is public (indexable, in the sitemap and the nav).
- * A content file decides with `published`. With no file, the current
- * tracker's page is the pre-start page, which is public. astro.config.mjs
- * applies the same rule to the sitemap.
- */
-export async function isTrackerPublic(slug = CURRENT_TRACKER): Promise<boolean> {
-  const t = await getTracker(slug);
-  return t ? t.data.published : slug === CURRENT_TRACKER;
-}
-
 /** The brands that have a brand page today, by name: the brands we track now. */
 export async function getTrackedBrands(): Promise<{ slug: string; name: string }[]> {
   const all = await getAllEmails();

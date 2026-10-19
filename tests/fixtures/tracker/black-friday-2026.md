@@ -1,7 +1,8 @@
 ---
 # TEST FIXTURE, not real data. tests/tracker-fixture.test.ts copies this to
 # src/content/tracker/black-friday-2026.md in a throwaway copy of the repo and
-# builds it, to prove an unpublished tracker builds as a noindex preview.
+# builds it, to prove an unpublished tracker stays public (indexable, in the
+# sitemap and nav) and shows the pre-start state, none of this data.
 # Brand slugs are real (the build requires them to exist in board data); every
 # number is made up. Never copy it into src/content/.
 slug: black-friday-2026

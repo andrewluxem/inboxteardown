@@ -1,12 +1,12 @@
 ---
-import { CURRENT_TRACKER, isTrackerPublic } from '../lib/content';
+import { CURRENT_TRACKER } from '../lib/content';
 
 const trackerHref = `/tracker/${CURRENT_TRACKER}/`;
-const showTracker = await isTrackerPublic();
 const items = [
   { href: '/', label: 'Scoreboard', match: (p: string) => p === '/' || p.startsWith('/email/') || p.startsWith('/brand/') },
   { href: '/teardown/', label: 'Teardown', match: (p: string) => p.startsWith('/teardown/') },
-  ...(showTracker ? [{ href: trackerHref, label: 'Tracker', match: (p: string) => p.startsWith('/tracker/') }] : []),
+  // Always in the nav: the tracker page is public whether or not it shows data yet.
+  { href: trackerHref, label: 'Tracker', match: (p: string) => p.startsWith('/tracker/') },
   { href: '/methodology/', label: 'Methodology', match: (p: string) => p.startsWith('/methodology/') },
   { href: '/watchlist/', label: 'Watchlist', match: (p: string) => p.startsWith('/watchlist/') },
 ];

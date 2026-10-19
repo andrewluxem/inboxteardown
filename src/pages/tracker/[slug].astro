@@ -1,13 +1,14 @@
 ---
-// The current tracker's page. With a content file that has days it is the
-// full tracker (TrackerLive). Before day 1 (no content file, or one with no
-// days) it is the pre-start page (TrackerSoon) at the same URL, so a link to
-// the tracker never 404s and never shows "Day 0".
+// The current tracker's page, always public (indexable, in the sitemap and
+// nav). With a published content file that has days it is the full tracker
+// (TrackerLive). Otherwise (no file, published: false, or no days yet) it is
+// the pre-start page (TrackerSoon) at the same URL, so a link to the tracker
+// never 404s, never shows "Day 0", and never shows unpublished data.
 import type { GetStaticPaths } from 'astro';
 import TrackerLive from '../../components/TrackerLive.astro';
 import TrackerSoon from '../../components/TrackerSoon.astro';
 import { CURRENT_TRACKER, CURRENT_TRACKER_START, getTrackers } from '../../lib/content';
-import { hasStarted } from '../../lib/tracker';
+import { showsData } from '../../lib/tracker';
 import type { Tracker } from '../../lib/schemas';
 
 export const getStaticPaths = (async () => {
@@ -23,4 +24,4 @@ export const getStaticPaths = (async () => {
 interface Props { tracker?: Tracker }
 const { tracker } = Astro.props;
 ---
-{tracker && hasStarted(tracker) ? <TrackerLive tracker={tracker} /> : <TrackerSoon start={tracker?.start ?? CURRENT_TRACKER_START} tracker={tracker} />}
+{showsData(tracker) ? <TrackerLive tracker={tracker} /> : <TrackerSoon start={tracker?.start ?? CURRENT_TRACKER_START} tracker={tracker} />}
