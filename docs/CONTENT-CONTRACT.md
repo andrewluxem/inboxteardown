@@ -176,12 +176,21 @@ october_avg_score: 29.1            # optional (addition): baseline for the "avg 
 days:                         # each date must fall within start..end
   - { date: 2026-11-02, launched_cumulative: 2, sends: 9, sends_vs_baseline: 4 }   # sends_vs_baseline is % change: 4 = +4%
 brands:
-  - { brand: Kestrel Outdoor, brand_slug: kestrel-outdoor, first_mention: 2026-10-29, discount: 30, sends_since: 14, avg_score: 27.4 }
+  - { brand: Kestrel Outdoor, brand_slug: kestrel-outdoor, first_mention: 2026-11-02, discount: 30, sends_since: 14, avg_score: 27.4 }
     # discount: headline % off as a number 0 to 100, or null when there is none
 categories:
   - { industry: ecommerce, sends_vs_baseline: 72 }
 ---
 ```
+
+Rules (the schema enforces them; the brand check runs at build):
+
+- Each `days[].date` falls within `start..end` and appears once.
+- In date order, `launched_cumulative` never decreases.
+- The latest day's `launched_cumulative` equals the number of `brands`
+  (zero brands when `days` is empty).
+- Every `brands[].first_mention` is on or after `start`.
+- Every `brands[].brand_slug` exists in a scoreboard file.
 
 `updated_at` and `october_avg_score` were added beyond the original spec,
 because the page needs an update time and an October baseline and must be
@@ -204,6 +213,7 @@ naming the file:
 - A scoreboard filename that does not match its `date`.
 - An email `id` that appears in more than one file.
 - A teardown that features an email id that does not exist.
+- A tracker brand whose `brand_slug` is not in any scoreboard file.
 - A `black-friday-2026` tracker whose `start` is not `CURRENT_TRACKER_START`
   (2026-11-02, in `src/lib/content.ts`). That constant is the one place the
   start date is set: the "Starts" page reads it, and this check keeps the

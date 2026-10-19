@@ -3,6 +3,7 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { brandSlugs, flatten, summarizeBrand, windowEnd, type FlatEmail } from './brands';
 import { fillSiteTokens } from './site-tokens';
+import { unknownTrackerBrands } from './tracker';
 import type { ScoreboardDay } from './schemas';
 
 let cachedDays: ScoreboardDay[] | undefined;
@@ -75,7 +76,12 @@ let cachedTrackers: CollectionEntry<'tracker'>[] | undefined;
 export async function getTrackers(): Promise<CollectionEntry<'tracker'>[]> {
   if (cachedTrackers) return cachedTrackers;
   const entries = await getCollection('tracker');
+  const boardSlugs = brandSlugs(await getAllEmails());
   for (const t of entries) {
+    const unknown = unknownTrackerBrands(t.data, boardSlugs);
+    if (unknown.length) {
+      throw new Error(`Tracker "${t.id}.md" lists brand_slug ${unknown.map((u) => `"${u}"`).join(', ')}, not in any scoreboard file.`);
+    }
     if (t.data.slug === CURRENT_TRACKER && t.data.start !== CURRENT_TRACKER_START) {
       throw new Error(
         `Tracker "${t.id}.md" has start ${t.data.start}; the current tracker starts ${CURRENT_TRACKER_START} (CURRENT_TRACKER_START in src/lib/content.ts).`,

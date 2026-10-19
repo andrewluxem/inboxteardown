@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Tracker } from '../src/lib/schemas';
-import { blackFridayDates, dayLabel, hasStarted, launchGrid } from '../src/lib/tracker';
+import { trackerSchema, type Tracker } from '../src/lib/schemas';
+import { blackFridayDates, dayLabel, hasStarted, launchGrid, unknownTrackerBrands } from '../src/lib/tracker';
 
 describe('Black Friday dates', () => {
   it('is the day after the fourth Thursday of November, with Cyber Monday 3 days later', () => {
@@ -51,5 +51,49 @@ describe('day label', () => {
     const t = { ...base, days: [{ date: '2026-11-04', launched_cumulative: 1, sends: 4, sends_vs_baseline: 0 }] };
     expect(hasStarted(t)).toBe(true);
     expect(dayLabel(t.start, t)).toBe('Day 3 of 29');
+  });
+});
+
+describe('tracker invariants', () => {
+  const ok = {
+    slug: 'black-friday-2026', title: 'T', start: '2026-11-02', end: '2026-11-30', cohort_frozen: '2026-10-26',
+    published: false, cohort_size: 5,
+    days: [
+      { date: '2026-11-02', launched_cumulative: 1, sends: 3, sends_vs_baseline: 0 },
+      { date: '2026-11-03', launched_cumulative: 2, sends: 3, sends_vs_baseline: 0 },
+    ],
+    brands: [
+      { brand: 'A', brand_slug: 'a', first_mention: '2026-11-02', discount: null, sends_since: 1, avg_score: 20 },
+      { brand: 'B', brand_slug: 'b', first_mention: '2026-11-03', discount: 10, sends_since: 1, avg_score: 20 },
+    ],
+    categories: [],
+  };
+  const messages = (t: unknown) => {
+    const r = trackerSchema.safeParse(t);
+    return r.success ? [] : r.error.issues.map((i) => i.message);
+  };
+
+  it('accepts a consistent tracker, and an empty one', () => {
+    expect(messages(ok)).toEqual([]);
+    expect(messages({ ...ok, days: [], brands: [] })).toEqual([]);
+  });
+  it('rejects launched_cumulative going down, in date order', () => {
+    const days = [ok.days[1], { ...ok.days[0], date: '2026-11-04', launched_cumulative: 1 }];
+    expect(messages({ ...ok, days, brands: ok.brands.slice(0, 1) }).join()).toMatch(/never decreases/);
+  });
+  it('rejects a repeated date', () => {
+    expect(messages({ ...ok, days: [ok.days[0], ok.days[0], ok.days[1]] }).join()).toMatch(/more than once/);
+  });
+  it('rejects a launched count that differs from brands.length', () => {
+    expect(messages({ ...ok, brands: ok.brands.slice(0, 1) }).join()).toMatch(/1 brands listed but the latest launched_cumulative is 2/);
+    expect(messages({ ...ok, days: [] }).join()).toMatch(/2 brands listed but the latest launched_cumulative is 0/);
+  });
+  it('rejects a first mention before start', () => {
+    const brands = [{ ...ok.brands[0], first_mention: '2026-11-01' }, ok.brands[1]];
+    expect(messages({ ...ok, brands }).join()).toMatch(/2026-11-01 is before start 2026-11-02/);
+  });
+  it('flags brand slugs that are not in board data', () => {
+    expect(unknownTrackerBrands(trackerSchema.parse(ok), ['a', 'c'])).toEqual(['b']);
+    expect(unknownTrackerBrands(trackerSchema.parse(ok), ['a', 'b'])).toEqual([]);
   });
 });

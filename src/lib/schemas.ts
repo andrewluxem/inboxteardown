@@ -203,6 +203,35 @@ export const trackerSchema = z
         ctx.addIssue({ code: 'custom', path: ['days', i, 'launched_cumulative'], message: 'exceeds cohort_size' });
       }
     });
+    // In date order, launched_cumulative never goes down (and no date repeats).
+    const byDate = t.days.map((d, i) => ({ d, i })).sort((a, b) => a.d.date.localeCompare(b.d.date));
+    byDate.forEach(({ d, i }, k) => {
+      const prev = byDate[k - 1]?.d;
+      if (!prev) return;
+      if (prev.date === d.date) {
+        ctx.addIssue({ code: 'custom', path: ['days', i, 'date'], message: `${d.date} appears more than once` });
+      } else if (d.launched_cumulative < prev.launched_cumulative) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['days', i, 'launched_cumulative'],
+          message: `${d.launched_cumulative} on ${d.date} is less than ${prev.launched_cumulative} on ${prev.date}; it never decreases`,
+        });
+      }
+    });
+    // The latest day's launched count is the number of brands listed.
+    const launched = byDate.at(-1)?.d.launched_cumulative ?? 0;
+    if (launched !== t.brands.length) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['brands'],
+        message: `${t.brands.length} brands listed but the latest launched_cumulative is ${launched}; they must match`,
+      });
+    }
+    t.brands.forEach((b, i) => {
+      if (b.first_mention < t.start) {
+        ctx.addIssue({ code: 'custom', path: ['brands', i, 'first_mention'], message: `${b.first_mention} is before start ${t.start}` });
+      }
+    });
   });
 
 export const pageSchema = z.strictObject({

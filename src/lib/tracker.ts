@@ -12,6 +12,15 @@ export function trackerProgress(t: Tracker) {
   };
 }
 
+/**
+ * Tracker brands whose brand_slug is not in the board data. A per-file
+ * schema cannot see the boards, so src/lib/content.ts runs this at build.
+ */
+export function unknownTrackerBrands(t: Pick<Tracker, 'brands'>, boardSlugs: Iterable<string>): string[] {
+  const known = new Set(boardSlugs);
+  return t.brands.map((b) => b.brand_slug).filter((slug) => !known.has(slug));
+}
+
 /** True once the tracker has a day of data; before that the page is the pre-start page. */
 export function hasStarted(t: Tracker | undefined): boolean {
   return !!t && t.days.length > 0;
