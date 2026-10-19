@@ -17,8 +17,8 @@ export const SITE = {
   // When true: /robots.txt becomes "User-agent: * / Allow: /" plus the
   // sitemap URL (src/pages/robots.txt.ts), and prelaunch's robots rule
   // passes. While false, robots.txt disallows everything for every crawler.
-  // It changes nothing else: per-page noindex (drafts, unpublished
-  // trackers, signups-soon, signed-up) and the sitemap filter work either way.
+  // It changes nothing else: per-page noindex (drafts,
+  // signups-soon, signed-up) and the sitemap filter work either way.
   allowIndexing: true,
   description: 'Yesterday\'s marketing email, scored on a public rubric every morning.',
   tagline: 'Scored competitive email intel',

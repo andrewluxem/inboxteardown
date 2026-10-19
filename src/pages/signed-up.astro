@@ -1,5 +1,5 @@
 ---
-// Where the signup endpoint sends people after a signup: /signed-up/?list=newsletter|watchlist,
+// Where the signup endpoint sends people after a signup: /signed-up/?list=newsletter|watchlist|bfcm,
 // or /signed-up/?signup=error when the signup did not go through.
 // Static, so the list-specific line and the error state are picked client
 // side; without JS the generic success line stays.
@@ -14,6 +14,7 @@ import { SITE, mailto } from '../config/site';
       <p class="lede" style="margin-top: 18px;" data-list="">Thanks. Your address is on the list.</p>
       <p class="lede" style="margin-top: 18px;" data-list="newsletter" hidden>You'll get the weekly teardown when the first issue goes out.</p>
       <p class="lede" style="margin-top: 18px;" data-list="watchlist" hidden>You're on the Watchlist waitlist. We'll email you when the Watchlist opens.</p>
+      <p class="lede" style="margin-top: 18px;" data-list="bfcm" hidden>We'll email you the day the first tracked brand starts Black Friday.</p>
       <p class="muted" style="margin-top: 18px;">Changed your mind? Email <a href={mailto('Remove my signup')}>{SITE.contactEmail}</a> and we'll remove your address.</p>
     </div>
     <div data-state="error" hidden>
@@ -30,7 +31,7 @@ import { SITE, mailto } from '../config/site';
     document.title = document.title.replace("You're signed up", 'Signup failed');
   } else {
     const list = params.get('list');
-    if (list === 'newsletter' || list === 'watchlist') {
+    if (list === 'newsletter' || list === 'watchlist' || list === 'bfcm') {
       for (const el of document.querySelectorAll<HTMLElement>('[data-list]')) el.hidden = el.dataset.list !== list;
     }
   }

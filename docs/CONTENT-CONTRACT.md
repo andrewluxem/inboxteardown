@@ -156,26 +156,43 @@ Markdown body.
 The tracker page is built from this file alone. It is served at
 `/tracker/<slug>/`.
 
+The page is always public: indexable, in the sitemap and the nav, and linked
+from the home page. `published` only decides whether the data shows. Until
+the file says `published: true` and has at least one day (or while there is
+no file), the page is the pre-start page: "Starts Nov 2", what counts as
+started, the brands on the scoreboard now, and the signup form, with no
+banner. The page, its OG image and the home card never show "Day 0" or
+unpublished numbers.
+
 ```yaml
 ---
 slug: black-friday-2026
 title: "Black Friday 2026 tracker"
-start: 2026-11-01
+start: 2026-11-02               # the current tracker must match CURRENT_TRACKER_START in src/lib/content.ts
 end: 2026-11-30
 cohort_frozen: 2026-10-26
-published: false              # false: page builds with noindex, a preview banner, and no nav or sitemap entry
+published: false              # false: don't show data yet; the page stays public and renders the pre-start state
 cohort_size: 11
 updated_at: 2026-11-20T14:00:00Z   # optional (addition): shown as "Updated ..." in the eyebrow
 october_avg_score: 29.1            # optional (addition): baseline for the "avg score" stat
 days:                         # each date must fall within start..end
-  - { date: 2026-11-01, launched_cumulative: 2, sends: 9, sends_vs_baseline: 4 }   # sends_vs_baseline is % change: 4 = +4%
+  - { date: 2026-11-02, launched_cumulative: 2, sends: 9, sends_vs_baseline: 4 }   # sends_vs_baseline is % change: 4 = +4%
 brands:
-  - { brand: Kestrel Outdoor, brand_slug: kestrel-outdoor, first_mention: 2026-10-29, discount: 30, sends_since: 14, avg_score: 27.4 }
+  - { brand: Kestrel Outdoor, brand_slug: kestrel-outdoor, first_mention: 2026-11-02, discount: 30, sends_since: 14, avg_score: 27.4 }
     # discount: headline % off as a number 0 to 100, or null when there is none
 categories:
   - { industry: ecommerce, sends_vs_baseline: 72 }
 ---
 ```
+
+Rules (the schema enforces them; the brand check runs at build):
+
+- Each `days[].date` falls within `start..end` and appears once.
+- In date order, `launched_cumulative` never decreases.
+- The latest day's `launched_cumulative` equals the number of `brands`
+  (zero brands when `days` is empty).
+- Every `brands[].first_mention` is on or after `start`.
+- Every `brands[].brand_slug` exists in a scoreboard file.
 
 `updated_at` and `october_avg_score` were added beyond the original spec,
 because the page needs an update time and an October baseline and must be
@@ -198,3 +215,8 @@ naming the file:
 - A scoreboard filename that does not match its `date`.
 - An email `id` that appears in more than one file.
 - A teardown that features an email id that does not exist.
+- A tracker brand whose `brand_slug` is not in any scoreboard file.
+- A `black-friday-2026` tracker whose `start` is not `CURRENT_TRACKER_START`
+  (2026-11-02, in `src/lib/content.ts`). That constant is the one place the
+  start date is set: the "Starts" page reads it, and this check keeps the
+  content file (and so the launch chart) in line with it.

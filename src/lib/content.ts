@@ -1,8 +1,9 @@
 // Build-time access to content. Cross-file rules that a per-file Zod schema
 // cannot express are enforced here and throw, which fails the build.
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { flatten, windowEnd, type FlatEmail } from './brands';
+import { brandSlugs, flatten, summarizeBrand, windowEnd, type FlatEmail } from './brands';
 import { fillSiteTokens } from './site-tokens';
+import { unknownTrackerBrands } from './tracker';
 import type { ScoreboardDay } from './schemas';
 
 let cachedDays: ScoreboardDay[] | undefined;
@@ -63,13 +64,31 @@ export async function getTeardowns(): Promise<TeardownEntry[]> {
 }
 
 export const CURRENT_TRACKER = 'black-friday-2026';
-/** First day of the current tracker; its page shows a "starts" state until a content file exists. */
+/**
+ * First day of the current tracker, and the single source for it: the page
+ * shows a "Starts" state before this date or until a content file exists, and
+ * the current tracker's content file must use the same `start`.
+ */
 export const CURRENT_TRACKER_START = '2026-11-02';
 
 let cachedTrackers: CollectionEntry<'tracker'>[] | undefined;
 
 export async function getTrackers(): Promise<CollectionEntry<'tracker'>[]> {
-  cachedTrackers ??= await getCollection('tracker');
+  if (cachedTrackers) return cachedTrackers;
+  const entries = await getCollection('tracker');
+  const boardSlugs = brandSlugs(await getAllEmails());
+  for (const t of entries) {
+    const unknown = unknownTrackerBrands(t.data, boardSlugs);
+    if (unknown.length) {
+      throw new Error(`Tracker "${t.id}.md" lists brand_slug ${unknown.map((u) => `"${u}"`).join(', ')}, not in any scoreboard file.`);
+    }
+    if (t.data.slug === CURRENT_TRACKER && t.data.start !== CURRENT_TRACKER_START) {
+      throw new Error(
+        `Tracker "${t.id}.md" has start ${t.data.start}; the current tracker starts ${CURRENT_TRACKER_START} (CURRENT_TRACKER_START in src/lib/content.ts).`,
+      );
+    }
+  }
+  cachedTrackers = entries;
   return cachedTrackers;
 }
 
@@ -77,8 +96,15 @@ export async function getTracker(slug = CURRENT_TRACKER): Promise<CollectionEntr
   return (await getTrackers()).find((t) => t.data.slug === slug);
 }
 
-export async function isTrackerPublished(slug = CURRENT_TRACKER): Promise<boolean> {
-  return (await getTracker(slug))?.data.published ?? false;
+/** The brands that have a brand page today, by name: the brands we track now. */
+export async function getTrackedBrands(): Promise<{ slug: string; name: string }[]> {
+  const all = await getAllEmails();
+  const end = await getWindowEnd();
+  return brandSlugs(all)
+    .map((slug) => summarizeBrand(all, slug, end))
+    .filter((b) => b !== undefined)
+    .map((b) => ({ slug: b.slug, name: b.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getPage(id: string): Promise<CollectionEntry<'pages'>> {

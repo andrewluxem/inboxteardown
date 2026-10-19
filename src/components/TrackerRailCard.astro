@@ -1,0 +1,14 @@
+---
+// Home-page link to the current tracker, which is always public.
+import { CURRENT_TRACKER, CURRENT_TRACKER_START, getTracker } from '../lib/content';
+import { dayLabel } from '../lib/tracker';
+
+const t = (await getTracker())?.data;
+const title = t?.title ?? `Black Friday ${CURRENT_TRACKER_START.slice(0, 4)} tracker`;
+---
+<section class="card" aria-labelledby="rail-tracker">
+  <p class="eyebrow">{dayLabel(CURRENT_TRACKER_START, t)}</p>
+  <h2 id="rail-tracker" class="display" style="font-size: 1.75rem; margin-top: 6px;">{title}</h2>
+  <p class="muted">Which brands in our inbox have started Black Friday email, updated daily.</p>
+  <a class="btn btn--ghost" href={`/tracker/${CURRENT_TRACKER}/`}>See the tracker</a>
+</section>

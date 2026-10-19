@@ -1,15 +1,14 @@
 ---
-// The tracker page, built from its content file alone. While `published: false`
-// the page still builds, but with noindex, a preview banner, and no nav or
-// sitemap entry (see astro.config.mjs and Header.astro).
+// The tracker page once its file is published with a day of data (until then,
+// TrackerSoon), built from its content file alone.
 import Base from '../layouts/Base.astro';
 import { industryLabel } from '../config/industries';
 import { TOTAL_MAX } from '../config/rubric';
 import { brandSlugs } from '../lib/brands';
 import { getAllEmails } from '../lib/content';
-import { dateRange, formatDateTimeMT, formatMedium, formatShort } from '../lib/dates';
+import { formatDateTimeMT, formatMedium, formatShort } from '../lib/dates';
 import { ogPath } from '../lib/og';
-import { startedDefinition, trackerProgress } from '../lib/tracker';
+import { dayLabel, launchGrid, startedDefinition, trackerProgress } from '../lib/tracker';
 import { median } from '../lib/scoring';
 import type { Tracker } from '../lib/schemas';
 
@@ -17,9 +16,10 @@ interface Props { tracker: Tracker }
 const { tracker: t } = Astro.props;
 
 const knownBrands = new Set(brandSlugs(await getAllEmails()));
-const calendar = dateRange(t.start, t.end);
+// One column per day from start to end; the CSS grid reads the count from --days.
+const { calendar, axis } = launchGrid(t.start, t.end);
 const byDate = new Map(t.days.map((d) => [d.date, d]));
-const { latest, dayN, launched } = trackerProgress(t);
+const { latest, launched } = trackerProgress(t);
 
 const brands = [...t.brands].sort((a, b) => a.first_mention.localeCompare(b.first_mention) || a.brand.localeCompare(b.brand));
 const earliest = brands[0];
@@ -30,33 +30,12 @@ const bfAvg = bfSends ? t.brands.reduce((sum, b) => sum + b.avg_score * b.sends_
 
 const signed = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n)}%`;
 
-// Black Friday is the day after the fourth Thursday of November.
-const year = Number(t.start.slice(0, 4));
-const nov1 = new Date(Date.UTC(year, 10, 1)).getUTCDay();
-const thanksgiving = 1 + ((4 - nov1 + 7) % 7) + 21;
-const bf = `${year}-11-${String(thanksgiving + 1).padStart(2, '0')}`;
-const cm = `${year}-11-${String(thanksgiving + 4).padStart(2, '0')}`;
-const axis = new Map<string, { top?: string; date: string }>([
-  [`${year}-11-01`, { date: 'Nov 1' }],
-  [`${year}-11-08`, { date: '8' }],
-  [`${year}-11-15`, { date: '15' }],
-  [`${year}-11-22`, { date: '22' }],
-  [bf, { top: 'BF', date: formatShort(bf) }],
-  [cm, { top: 'CM', date: formatShort(cm) }],
-]);
-
 const catMax = Math.max(1, ...t.categories.map((c) => Math.abs(c.sends_vs_baseline)));
 const categories = [...t.categories].sort((a, b) => b.sends_vs_baseline - a.sends_vs_baseline);
 const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatMedium(latest.date) : 'not yet';
 ---
-<Base title={t.title} description={`${launched} of ${t.cohort_size} tracked brands have started Black Friday email. Updated daily.`} noindex={!t.published} ogImage={ogPath.tracker(t.slug)}>
-  {!t.published && (
-    <div class="banner" slot="banner" role="note">
-      <div class="wrap">Preview, not public. This page is excluded from the sitemap and navigation and marked noindex.</div>
-    </div>
-  )}
-
-  <p class="eyebrow num">{t.title} · Day {dayN} of {calendar.length} · Updated {updated}</p>
+<Base title={t.title} description={`${launched} of ${t.cohort_size} tracked brands have started Black Friday email. Updated daily.`} ogImage={ogPath.tracker(t.slug)}>
+  <p class="eyebrow num">{t.title} · {dayLabel(t.start, t)} · Updated {updated}</p>
   <h1 class="display bf-h1"><span class="accent">{launched} of {t.cohort_size}</span> brands have started Black Friday</h1>
   <p class="lede bf-lede">Cohort of {t.cohort_size} brands, frozen {formatMedium(t.cohort_frozen)}. Tracking runs {formatShort(t.start)} to {formatShort(t.end)}.</p>
   <p class="bf-def">{startedDefinition(t.start)}</p>
@@ -89,7 +68,7 @@ const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatM
       <h2 id="launch-heading" class="display">Brands launched, cumulative</h2>
       <p class="eyebrow">{t.cohort_size} brands in the cohort</p>
     </div>
-    <div class="card chart-card">
+    <div class="card chart-card" style={`--days: ${calendar.length}`}>
       <ol class="launch" aria-label="Brands launched per day">
         {calendar.map((date) => {
           const d = byDate.get(date);
@@ -169,7 +148,7 @@ const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatM
   .stat-sub { margin-top: 6px; font-size: var(--text-sm); color: var(--muted); }
 
   .chart-card { padding: 20px 20px 12px; }
-  .launch, .launch-axis { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 3px; }
+  .launch, .launch-axis { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(var(--days), minmax(0, 1fr)); gap: 3px; }
   .launch { height: 200px; border-bottom: 1px solid var(--ink); }
   .launch-day { display: flex; align-items: flex-end; }
   .launch-bar { width: 100%; background: var(--strong-fg); min-height: 2px; }

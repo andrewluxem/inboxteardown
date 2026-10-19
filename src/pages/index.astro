@@ -4,6 +4,7 @@ import Scoreboard from '../components/Scoreboard.astro';
 import EmailMiniCard from '../components/EmailMiniCard.astro';
 import TeardownRailCard from '../components/TeardownRailCard.astro';
 import SignupCard from '../components/SignupCard.astro';
+import TrackerRailCard from '../components/TrackerRailCard.astro';
 import HowScoresCard from '../components/HowScoresCard.astro';
 import { TOTAL_MAX } from '../config/rubric';
 import { getLatestDay, getTeardowns } from '../lib/content';
@@ -49,6 +50,7 @@ const fails = ranked.filter((s) => s.capped).length;
 
     <aside class="rail" aria-label="More from Inbox Teardown">
       <TeardownRailCard teardown={teardown} />
+      <TrackerRailCard />
       <SignupCard />
       <HowScoresCard />
     </aside>
