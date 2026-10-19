@@ -24,4 +24,4 @@ export const getStaticPaths = (async () => {
 interface Props { tracker?: Tracker }
 const { tracker } = Astro.props;
 ---
-{showsData(tracker) ? <TrackerLive tracker={tracker} /> : <TrackerSoon start={tracker?.start ?? CURRENT_TRACKER_START} tracker={tracker} />}
+{tracker && showsData(tracker) ? <TrackerLive tracker={tracker} /> : <TrackerSoon start={tracker?.start ?? CURRENT_TRACKER_START} tracker={tracker} />}

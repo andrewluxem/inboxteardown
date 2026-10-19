@@ -27,13 +27,13 @@ export function unknownTrackerBrands(t: Pick<Tracker, 'brands'>, boardSlugs: Ite
  * shows the pre-start state. `published: false` means "don't show data yet",
  * nothing more: the page stays public either way.
  */
-export function showsData(t: Tracker | undefined): t is Tracker {
+export function showsData(t: Tracker | undefined): boolean {
   return !!t && t.published && t.days.length > 0;
 }
 
 /** "Starts Nov 2" until data may be shown, then "Day 3 of 29". Never "Day 0". */
 export function dayLabel(start: string, t?: Tracker): string {
-  if (!showsData(t)) return `Starts ${formatShort(start)}`;
+  if (!t || !showsData(t)) return `Starts ${formatShort(start)}`;
   const { dayN, totalDays } = trackerProgress(t);
   return `Day ${dayN} of ${totalDays}`;
 }

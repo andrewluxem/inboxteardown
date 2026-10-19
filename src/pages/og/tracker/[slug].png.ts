@@ -22,7 +22,7 @@ export async function GET({ props }: APIContext<{ tracker?: Tracker }>) {
   const t = props.tracker;
   const start = t?.start ?? CURRENT_TRACKER_START;
   const title = t?.title ?? `Black Friday ${start.slice(0, 4)} tracker`;
-  if (!showsData(t)) {
+  if (!t || !showsData(t)) {
     return pngResponse(
       await renderOgPng({
         eyebrow: title,
