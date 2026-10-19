@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { blackFridayDates, launchGrid } from '../src/lib/tracker';
+import type { Tracker } from '../src/lib/schemas';
+import { blackFridayDates, dayLabel, hasStarted, launchGrid } from '../src/lib/tracker';
 
 describe('Black Friday dates', () => {
   it('is the day after the fourth Thursday of November, with Cyber Monday 3 days later', () => {
@@ -32,5 +33,23 @@ describe('launch grid', () => {
   it('follows any range length', () => {
     expect(launchGrid('2026-11-01', '2026-11-30').calendar).toHaveLength(30);
     expect(launchGrid('2026-11-02', '2026-11-02').calendar).toHaveLength(1);
+  });
+});
+
+describe('day label', () => {
+  const base: Tracker = {
+    slug: 'black-friday-2026', title: 'Black Friday 2026 tracker', start: '2026-11-02', end: '2026-11-30',
+    cohort_frozen: '2026-10-26', published: false, cohort_size: 3, days: [], brands: [], categories: [],
+  };
+  it('says "Starts Nov 2" before day 1, never "Day 0"', () => {
+    expect(dayLabel('2026-11-02')).toBe('Starts Nov 2');
+    expect(dayLabel('2026-11-02', base)).toBe('Starts Nov 2');
+    expect(hasStarted(base)).toBe(false);
+    expect(hasStarted(undefined)).toBe(false);
+  });
+  it('counts days from the start once there is data', () => {
+    const t = { ...base, days: [{ date: '2026-11-04', launched_cumulative: 1, sends: 4, sends_vs_baseline: 0 }] };
+    expect(hasStarted(t)).toBe(true);
+    expect(dayLabel(t.start, t)).toBe('Day 3 of 29');
   });
 });

@@ -1,8 +1,8 @@
 ---
-import { CURRENT_TRACKER, isTrackerPublished } from '../lib/content';
+import { CURRENT_TRACKER, isTrackerPublic } from '../lib/content';
 
 const trackerHref = `/tracker/${CURRENT_TRACKER}/`;
-const showTracker = await isTrackerPublished();
+const showTracker = await isTrackerPublic();
 const items = [
   { href: '/', label: 'Scoreboard', match: (p: string) => p === '/' || p.startsWith('/email/') || p.startsWith('/brand/') },
   { href: '/teardown/', label: 'Teardown', match: (p: string) => p.startsWith('/teardown/') },

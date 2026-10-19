@@ -1,7 +1,7 @@
 // Build-time access to content. Cross-file rules that a per-file Zod schema
 // cannot express are enforced here and throw, which fails the build.
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { flatten, windowEnd, type FlatEmail } from './brands';
+import { brandSlugs, flatten, summarizeBrand, windowEnd, type FlatEmail } from './brands';
 import { fillSiteTokens } from './site-tokens';
 import type { ScoreboardDay } from './schemas';
 
@@ -92,6 +92,28 @@ export async function getTracker(slug = CURRENT_TRACKER): Promise<CollectionEntr
 
 export async function isTrackerPublished(slug = CURRENT_TRACKER): Promise<boolean> {
   return (await getTracker(slug))?.data.published ?? false;
+}
+
+/**
+ * Whether a tracker page is public (indexable, in the sitemap and the nav).
+ * A content file decides with `published`. With no file, the current
+ * tracker's page is the pre-start page, which is public. astro.config.mjs
+ * applies the same rule to the sitemap.
+ */
+export async function isTrackerPublic(slug = CURRENT_TRACKER): Promise<boolean> {
+  const t = await getTracker(slug);
+  return t ? t.data.published : slug === CURRENT_TRACKER;
+}
+
+/** The brands that have a brand page today, by name: the brands we track now. */
+export async function getTrackedBrands(): Promise<{ slug: string; name: string }[]> {
+  const all = await getAllEmails();
+  const end = await getWindowEnd();
+  return brandSlugs(all)
+    .map((slug) => summarizeBrand(all, slug, end))
+    .filter((b) => b !== undefined)
+    .map((b) => ({ slug: b.slug, name: b.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getPage(id: string): Promise<CollectionEntry<'pages'>> {

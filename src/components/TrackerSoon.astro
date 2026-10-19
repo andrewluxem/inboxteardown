@@ -1,33 +1,62 @@
 ---
-// The tracker page before its content file exists: when tracking starts and
-// what counts as started. noindex; not in the sitemap or navigation.
+// The tracker page before day 1: no content file yet, or one with no days.
+// Evergreen only: when tracking starts, what counts as started, the brands we
+// track now, and how to get notified. Public (indexable, in the sitemap and
+// nav) unless a content file exists with `published: false`.
 import Base from '../layouts/Base.astro';
+import { CURRENT_TRACKER, getTrackedBrands } from '../lib/content';
 import { formatShort } from '../lib/dates';
+import { ogPath } from '../lib/og';
 import { startedDefinition } from '../lib/tracker';
+import type { Tracker } from '../lib/schemas';
 
-interface Props { start: string }
-const { start } = Astro.props;
+interface Props {
+  start: string;
+  /** The content file, when one exists but has no days yet. */
+  tracker?: Tracker;
+}
+const { start, tracker } = Astro.props;
 const year = start.slice(0, 4);
+const title = tracker?.title ?? `Black Friday ${year} tracker`;
+const isPublic = tracker ? tracker.published : true;
+const brands = await getTrackedBrands();
 ---
-<Base title={`Black Friday ${year} tracker`} description={`The Black Friday ${year} tracker starts ${formatShort(start)}.`} noindex>
-  <p class="eyebrow num">Black Friday {year} tracker</p>
+<Base title={title} description={`Which brands have started Black Friday ${year} email. Tracking starts ${formatShort(start)}.`} noindex={!isPublic} ogImage={ogPath.tracker(tracker?.slug ?? CURRENT_TRACKER)}>
+  {!isPublic && (
+    <div class="banner" slot="banner" role="note">
+      <div class="wrap">Preview, not public. This page is excluded from the sitemap and navigation and marked noindex.</div>
+    </div>
+  )}
+
+  <p class="eyebrow num">{title}</p>
   <h1 class="display soon-h1">Starts <span class="accent">{formatShort(start)}</span></h1>
   <p class="lede soon-lede">From {formatShort(start)}, this page tracks which brands in our inbox have started Black Friday email, updated daily.</p>
-  <p class="soon-def">{startedDefinition(start)}</p>
 
-  <section class="section cta-band dark" aria-labelledby="soon-cta">
-    <div>
-      <p class="eyebrow">Watchlist</p>
-      <h2 id="soon-cta" class="display">The Watchlist is coming</h2>
-    </div>
-    <a class="btn btn--accent" href="/watchlist/">Join the Watchlist waitlist</a>
+  <section class="section" aria-labelledby="soon-started">
+    <h2 id="soon-started" class="display soon-h2">What counts as started</h2>
+    <p class="soon-def">{startedDefinition(start)}</p>
+  </section>
+
+  <section class="section" aria-labelledby="soon-brands">
+    <h2 id="soon-brands" class="display soon-h2">Brands we track now</h2>
+    <p class="soon-def">The {brands.length} brands on our daily scoreboard today.</p>
+    <ul class="soon-brands card">
+      {brands.map((b) => <li><a href={`/brand/${b.slug}/`}>{b.name}</a></li>)}
+    </ul>
+  </section>
+
+  <section class="section" aria-labelledby="soon-notify">
+    <h2 id="soon-notify" class="display soon-h2">Get notified</h2>
+    <p class="soon-def">This page updates daily from {formatShort(start)}.</p>
   </section>
 </Base>
 
 <style>
   .soon-h1 { margin-top: 14px; max-width: 18ch; }
   .soon-lede { margin-top: 18px; }
+  .soon-h2 { font-size: 1.75rem; }
   .soon-def { margin-top: 12px; max-width: var(--measure); color: var(--ink-2); }
-  .cta-band { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px 40px; padding: 32px; margin-top: 56px; }
-  .cta-band h2 { margin-top: 8px; max-width: 22ch; }
+  .soon-brands { list-style: none; margin-top: 16px; padding: 12px 20px; columns: 3 200px; column-gap: 24px; }
+  .soon-brands li { break-inside: avoid; padding-block: 6px; }
+  .soon-brands a { display: inline-block; padding-block: 4px; }
 </style>

@@ -12,6 +12,18 @@ export function trackerProgress(t: Tracker) {
   };
 }
 
+/** True once the tracker has a day of data; before that the page is the pre-start page. */
+export function hasStarted(t: Tracker | undefined): boolean {
+  return !!t && t.days.length > 0;
+}
+
+/** "Starts Nov 2" before day 1, then "Day 3 of 29". Never "Day 0". */
+export function dayLabel(start: string, t?: Tracker): string {
+  if (!t || !hasStarted(t)) return `Starts ${formatShort(start)}`;
+  const { dayN, totalDays } = trackerProgress(t);
+  return `Day ${dayN} of ${totalDays}`;
+}
+
 /** What counts as a brand having "started" Black Friday, in plain words. */
 export function startedDefinition(start: string): string {
   return `A brand has started Black Friday when its first email that mentions Black Friday or Cyber Monday by name, in the subject or the body, lands in our inbox on or after ${formatShort(start)}.`;

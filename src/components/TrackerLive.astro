@@ -1,5 +1,6 @@
 ---
-// The tracker page, built from its content file alone. While `published: false`
+// The tracker page once it has a day of data (before that, TrackerSoon),
+// built from its content file alone. While `published: false`
 // the page still builds, but with noindex, a preview banner, and no nav or
 // sitemap entry (see astro.config.mjs and Header.astro).
 import Base from '../layouts/Base.astro';
@@ -9,7 +10,7 @@ import { brandSlugs } from '../lib/brands';
 import { getAllEmails } from '../lib/content';
 import { formatDateTimeMT, formatMedium, formatShort } from '../lib/dates';
 import { ogPath } from '../lib/og';
-import { launchGrid, startedDefinition, trackerProgress } from '../lib/tracker';
+import { dayLabel, launchGrid, startedDefinition, trackerProgress } from '../lib/tracker';
 import { median } from '../lib/scoring';
 import type { Tracker } from '../lib/schemas';
 
@@ -20,7 +21,7 @@ const knownBrands = new Set(brandSlugs(await getAllEmails()));
 // One column per day from start to end; the CSS grid reads the count from --days.
 const { calendar, axis } = launchGrid(t.start, t.end);
 const byDate = new Map(t.days.map((d) => [d.date, d]));
-const { latest, dayN, launched } = trackerProgress(t);
+const { latest, launched } = trackerProgress(t);
 
 const brands = [...t.brands].sort((a, b) => a.first_mention.localeCompare(b.first_mention) || a.brand.localeCompare(b.brand));
 const earliest = brands[0];
@@ -42,7 +43,7 @@ const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatM
     </div>
   )}
 
-  <p class="eyebrow num">{t.title} · Day {dayN} of {calendar.length} · Updated {updated}</p>
+  <p class="eyebrow num">{t.title} · {dayLabel(t.start, t)} · Updated {updated}</p>
   <h1 class="display bf-h1"><span class="accent">{launched} of {t.cohort_size}</span> brands have started Black Friday</h1>
   <p class="lede bf-lede">Cohort of {t.cohort_size} brands, frozen {formatMedium(t.cohort_frozen)}. Tracking runs {formatShort(t.start)} to {formatShort(t.end)}.</p>
   <p class="bf-def">{startedDefinition(t.start)}</p>

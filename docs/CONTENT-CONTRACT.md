@@ -156,6 +156,12 @@ Markdown body.
 The tracker page is built from this file alone. It is served at
 `/tracker/<slug>/`.
 
+Before day 1 (no file yet, or a file with an empty `days` list) the page is
+the pre-start page: "Starts Nov 2", what counts as started, the brands on the
+scoreboard now, and the signup form. With no file it is public (indexable, in
+the sitemap, nav and home page); a file with `published: false` makes it a
+noindex preview either way. The page and its OG image never show "Day 0".
+
 ```yaml
 ---
 slug: black-friday-2026

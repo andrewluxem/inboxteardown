@@ -1,7 +1,8 @@
 // robots.txt is generated so the sitemap URL comes from src/config/site.ts.
 // Pre-launch it disallows everything. To launch, set `allowIndexing: true`
-// in src/config/site.ts. Unpublished trackers stay out of the index either
-// way: they carry noindex and are excluded from the sitemap.
+// in src/config/site.ts. Unpublished trackers (a content file with
+// published: false) stay out of the index either way: they carry noindex and
+// are excluded from the sitemap.
 import { SITE } from '../config/site';
 
 export function GET() {
