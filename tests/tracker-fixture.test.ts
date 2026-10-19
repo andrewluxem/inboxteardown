@@ -77,6 +77,11 @@ describe('build with the fixture in place', () => {
     expect(read('methodology/index.html')).not.toContain('/tracker/black-friday-2026/');
   });
 
+  it("gives each signup form its own page as the hidden source", () => {
+    expect(read('index.html')).toMatch(/<input type="hidden" name="source" value="\/"/);
+    expect(read('watchlist/index.html')).toMatch(/<input type="hidden" name="source" value="\/watchlist\/"/);
+  });
+
   it('builds the tracker OG image', () => {
     expect(existsSync(join(dist, 'og/tracker/black-friday-2026.png'))).toBe(true);
   });

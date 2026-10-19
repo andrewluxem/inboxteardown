@@ -1,5 +1,6 @@
 // Receives the site's signup form (src/components/SignupForm.astro): a native
-// urlencoded POST with `email`, `list` and the `website` honeypot. The browser
+// urlencoded POST with `email`, `list`, `source` (the form's page path, set at
+// build time) and the `website` honeypot. The browser
 // navigates here, so every outcome is a 303 back to the site: an invalid
 // email goes back to the form's page with ?signup=invalid, and every other
 // failure goes to /signed-up/?signup=error. Only a disallowed origin gets a
@@ -19,6 +20,12 @@ const EMAIL = /^[^\s@]{1,64}@[^\s@.]+(\.[^\s@.]+)+$/;
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+/** A same-site path such as /tracker/black-friday-2026/, or null. No //host, no query. */
+function sitePath(v: string | null): string | null {
+  if (!v || v.length > 512 || !/^\/(?!\/)[A-Za-z0-9\-._~\/]*$/.test(v)) return null;
+  return v;
+}
 
 function isAllowed(origin: string | null): origin is string {
   return !!origin && (ALLOWED_ORIGINS.has(origin) || PREVIEW_ORIGIN.test(origin));
@@ -103,9 +110,11 @@ Deno.serve(async (req) => {
   // Bots fill every field; people never see this one. Same answer as success.
   if ((form.get('website') ?? '') !== '') return redirect(signedUp, origin);
 
-  // Only trust a Referer from the same allowed origin; keep its path only.
-  let sourcePage: string | null = null;
-  if (referer && originOf(referer) === origin) sourcePage = new URL(referer).pathname.slice(0, 512);
+  // The form's own `source` field first. The site's Referrer-Policy sends only
+  // the origin cross-site, so a Referer path is a fallback for older forms,
+  // trusted only from the same allowed origin.
+  let sourcePage = sitePath(form.get('source'));
+  if (!sourcePage && referer && originOf(referer) === origin) sourcePage = sitePath(new URL(referer).pathname);
 
   // Back to the form's page; the form shows a message for ?signup=invalid.
   const email = (form.get('email') ?? '').trim().toLowerCase();
