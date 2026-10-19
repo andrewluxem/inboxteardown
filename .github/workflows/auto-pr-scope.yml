@@ -1,6 +1,7 @@
 # Pull requests from the nightly publisher (head branch auto/*) may change
-# only src/content/scoreboard/. Any other changed path (including the old
-# path of a rename) fails this check; every other PR passes. Runs no PR code:
+# only src/content/scoreboard/ and the one tracker file
+# src/content/tracker/black-friday-2026.md. Any other changed path (including
+# the old path of a rename) fails this check; every other PR passes. Runs no PR code:
 # the file list comes from the GitHub API.
 name: auto-pr-scope
 
@@ -15,7 +16,7 @@ jobs:
   auto-pr-scope:
     runs-on: ubuntu-latest
     steps:
-      - name: auto/ PRs change only src/content/scoreboard/
+      - name: auto/ PRs change only boards and the Black Friday tracker file
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_REF: ${{ github.head_ref }}
@@ -33,11 +34,12 @@ jobs:
             echo "::error::no changed files listed for PR #$PR_NUMBER"
             exit 1
           fi
-          outside=$(printf '%s\n' "$files" | sort -u | grep -v '^src/content/scoreboard/' || true)
+          allowed='^(src/content/scoreboard/.+|src/content/tracker/black-friday-2026\.md)$'
+          outside=$(printf '%s\n' "$files" | sort -u | grep -Ev "$allowed" || true)
           if [ -n "$outside" ]; then
             printf '%s\n' "$outside" | while IFS= read -r f; do
-              echo "::error file=$f::auto/ PRs may change only src/content/scoreboard/"
+              echo "::error file=$f::auto/ PRs may change only src/content/scoreboard/ and src/content/tracker/black-friday-2026.md"
             done
             exit 1
           fi
-          echo "all $(printf '%s\n' "$files" | sort -u | wc -l) changed files are under src/content/scoreboard/"
+          echo "all $(printf '%s\n' "$files" | sort -u | wc -l) changed files are boards or the Black Friday tracker file"
