@@ -160,7 +160,7 @@ The tracker page is built from this file alone. It is served at
 ---
 slug: black-friday-2026
 title: "Black Friday 2026 tracker"
-start: 2026-11-01
+start: 2026-11-02               # the current tracker must match CURRENT_TRACKER_START in src/lib/content.ts
 end: 2026-11-30
 cohort_frozen: 2026-10-26
 published: false              # false: page builds with noindex, a preview banner, and no nav or sitemap entry
@@ -168,7 +168,7 @@ cohort_size: 11
 updated_at: 2026-11-20T14:00:00Z   # optional (addition): shown as "Updated ..." in the eyebrow
 october_avg_score: 29.1            # optional (addition): baseline for the "avg score" stat
 days:                         # each date must fall within start..end
-  - { date: 2026-11-01, launched_cumulative: 2, sends: 9, sends_vs_baseline: 4 }   # sends_vs_baseline is % change: 4 = +4%
+  - { date: 2026-11-02, launched_cumulative: 2, sends: 9, sends_vs_baseline: 4 }   # sends_vs_baseline is % change: 4 = +4%
 brands:
   - { brand: Kestrel Outdoor, brand_slug: kestrel-outdoor, first_mention: 2026-10-29, discount: 30, sends_since: 14, avg_score: 27.4 }
     # discount: headline % off as a number 0 to 100, or null when there is none
@@ -198,3 +198,7 @@ naming the file:
 - A scoreboard filename that does not match its `date`.
 - An email `id` that appears in more than one file.
 - A teardown that features an email id that does not exist.
+- A `black-friday-2026` tracker whose `start` is not `CURRENT_TRACKER_START`
+  (2026-11-02, in `src/lib/content.ts`). That constant is the one place the
+  start date is set: the "Starts" page reads it, and this check keeps the
+  content file (and so the launch chart) in line with it.

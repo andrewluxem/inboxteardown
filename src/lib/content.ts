@@ -63,13 +63,26 @@ export async function getTeardowns(): Promise<TeardownEntry[]> {
 }
 
 export const CURRENT_TRACKER = 'black-friday-2026';
-/** First day of the current tracker; its page shows a "starts" state until a content file exists. */
+/**
+ * First day of the current tracker, and the single source for it: the page
+ * shows a "Starts" state before this date or until a content file exists, and
+ * the current tracker's content file must use the same `start`.
+ */
 export const CURRENT_TRACKER_START = '2026-11-02';
 
 let cachedTrackers: CollectionEntry<'tracker'>[] | undefined;
 
 export async function getTrackers(): Promise<CollectionEntry<'tracker'>[]> {
-  cachedTrackers ??= await getCollection('tracker');
+  if (cachedTrackers) return cachedTrackers;
+  const entries = await getCollection('tracker');
+  for (const t of entries) {
+    if (t.data.slug === CURRENT_TRACKER && t.data.start !== CURRENT_TRACKER_START) {
+      throw new Error(
+        `Tracker "${t.id}.md" has start ${t.data.start}; the current tracker starts ${CURRENT_TRACKER_START} (CURRENT_TRACKER_START in src/lib/content.ts).`,
+      );
+    }
+  }
+  cachedTrackers = entries;
   return cachedTrackers;
 }
 

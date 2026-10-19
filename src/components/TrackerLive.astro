@@ -7,9 +7,9 @@ import { industryLabel } from '../config/industries';
 import { TOTAL_MAX } from '../config/rubric';
 import { brandSlugs } from '../lib/brands';
 import { getAllEmails } from '../lib/content';
-import { dateRange, formatDateTimeMT, formatMedium, formatShort } from '../lib/dates';
+import { formatDateTimeMT, formatMedium, formatShort } from '../lib/dates';
 import { ogPath } from '../lib/og';
-import { startedDefinition, trackerProgress } from '../lib/tracker';
+import { launchGrid, startedDefinition, trackerProgress } from '../lib/tracker';
 import { median } from '../lib/scoring';
 import type { Tracker } from '../lib/schemas';
 
@@ -17,7 +17,8 @@ interface Props { tracker: Tracker }
 const { tracker: t } = Astro.props;
 
 const knownBrands = new Set(brandSlugs(await getAllEmails()));
-const calendar = dateRange(t.start, t.end);
+// One column per day from start to end; the CSS grid reads the count from --days.
+const { calendar, axis } = launchGrid(t.start, t.end);
 const byDate = new Map(t.days.map((d) => [d.date, d]));
 const { latest, dayN, launched } = trackerProgress(t);
 
@@ -29,21 +30,6 @@ const bfSends = t.brands.reduce((n, b) => n + b.sends_since, 0);
 const bfAvg = bfSends ? t.brands.reduce((sum, b) => sum + b.avg_score * b.sends_since, 0) / bfSends : undefined;
 
 const signed = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n)}%`;
-
-// Black Friday is the day after the fourth Thursday of November.
-const year = Number(t.start.slice(0, 4));
-const nov1 = new Date(Date.UTC(year, 10, 1)).getUTCDay();
-const thanksgiving = 1 + ((4 - nov1 + 7) % 7) + 21;
-const bf = `${year}-11-${String(thanksgiving + 1).padStart(2, '0')}`;
-const cm = `${year}-11-${String(thanksgiving + 4).padStart(2, '0')}`;
-const axis = new Map<string, { top?: string; date: string }>([
-  [`${year}-11-01`, { date: 'Nov 1' }],
-  [`${year}-11-08`, { date: '8' }],
-  [`${year}-11-15`, { date: '15' }],
-  [`${year}-11-22`, { date: '22' }],
-  [bf, { top: 'BF', date: formatShort(bf) }],
-  [cm, { top: 'CM', date: formatShort(cm) }],
-]);
 
 const catMax = Math.max(1, ...t.categories.map((c) => Math.abs(c.sends_vs_baseline)));
 const categories = [...t.categories].sort((a, b) => b.sends_vs_baseline - a.sends_vs_baseline);
@@ -89,7 +75,7 @@ const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatM
       <h2 id="launch-heading" class="display">Brands launched, cumulative</h2>
       <p class="eyebrow">{t.cohort_size} brands in the cohort</p>
     </div>
-    <div class="card chart-card">
+    <div class="card chart-card" style={`--days: ${calendar.length}`}>
       <ol class="launch" aria-label="Brands launched per day">
         {calendar.map((date) => {
           const d = byDate.get(date);
@@ -169,7 +155,7 @@ const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatM
   .stat-sub { margin-top: 6px; font-size: var(--text-sm); color: var(--muted); }
 
   .chart-card { padding: 20px 20px 12px; }
-  .launch, .launch-axis { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 3px; }
+  .launch, .launch-axis { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(var(--days), minmax(0, 1fr)); gap: 3px; }
   .launch { height: 200px; border-bottom: 1px solid var(--ink); }
   .launch-day { display: flex; align-items: flex-end; }
   .launch-bar { width: 100%; background: var(--strong-fg); min-height: 2px; }
