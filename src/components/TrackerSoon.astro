@@ -4,6 +4,7 @@
 // track now, and how to get notified. Public (indexable, in the sitemap and
 // nav) unless a content file exists with `published: false`.
 import Base from '../layouts/Base.astro';
+import SignupForm from './SignupForm.astro';
 import { CURRENT_TRACKER, getTrackedBrands } from '../lib/content';
 import { formatShort } from '../lib/dates';
 import { ogPath } from '../lib/og';
@@ -45,9 +46,11 @@ const brands = await getTrackedBrands();
     </ul>
   </section>
 
-  <section class="section" aria-labelledby="soon-notify">
-    <h2 id="soon-notify" class="display soon-h2">Get notified</h2>
-    <p class="soon-def">This page updates daily from {formatShort(start)}.</p>
+  <section class="section card dark soon-cta" aria-labelledby="soon-notify">
+    <p class="eyebrow">Get notified</p>
+    <h2 id="soon-notify" class="display soon-h2">Email me the day the first brand starts</h2>
+    <p class="soon-cta-sub">This page updates daily from {formatShort(start)}.</p>
+    <SignupForm list="bfcm" button="Email me the day the first brand starts" />
   </section>
 </Base>
 
@@ -59,4 +62,7 @@ const brands = await getTrackedBrands();
   .soon-brands { list-style: none; margin-top: 16px; padding: 12px 20px; columns: 3 200px; column-gap: 24px; }
   .soon-brands li { break-inside: avoid; padding-block: 6px; }
   .soon-brands a { display: inline-block; padding-block: 4px; }
+  .soon-cta { margin-top: 56px; padding: 32px; }
+  .soon-cta h2 { margin-top: 8px; max-width: 22ch; }
+  .soon-cta-sub { margin-top: 12px; max-width: var(--measure); color: var(--on-dark-muted); }
 </style>

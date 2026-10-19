@@ -5,7 +5,7 @@ description: "What Inbox Teardown collects when you sign up, who stores it, and 
 
 ## What we collect
 
-When you sign up, the form sends two things: the email address you type in, and which list you joined (the newsletter or the Watchlist waitlist). There are no other fields to fill in. The form also has a hidden field that only spam bots fill in; it is empty when you submit.
+When you sign up, the form sends two things: the email address you type in, and which list you joined (the newsletter, the Watchlist waitlist, or the Black Friday tracker alert). There are no other fields to fill in. The form also has a hidden field that only spam bots fill in; it is empty when you submit.
 
 Until signups open, the form sends nothing anywhere. Submitting it only shows a "Signups open soon" message.
 

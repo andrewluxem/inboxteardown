@@ -9,7 +9,9 @@
 
 const ALLOWED_ORIGINS = new Set(['https://www.inboxteardown.com', 'https://inboxteardown.com']);
 const PREVIEW_ORIGIN = /^https:\/\/[a-z0-9-]+-andrewluxemcrm-projects\.vercel\.app$/;
-const LISTS = new Set(['newsletter', 'watchlist']);
+// bfcm: the Black Friday tracker's "email me the day the first brand starts".
+// Needs migration 20261019120000 (the table's list check) applied first.
+const LISTS = new Set(['newsletter', 'watchlist', 'bfcm']);
 const MAX_BODY_BYTES = 4096;
 // Deliberately loose: one @, no spaces, a dot in the domain. Typos beyond that
 // are the visitor's to fix; the browser's type=email check runs first anyway.
