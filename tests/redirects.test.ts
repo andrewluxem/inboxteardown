@@ -6,7 +6,9 @@ import type { ScoreboardDay } from '../src/lib/schemas';
 
 const root = join(import.meta.dirname, '..');
 const map = readRedirectMap(join(root, 'src/data/brand-redirects.json'));
-const today = readBoards(join(root, 'src/content/scoreboard'));
+// SCOREBOARD_DIR points the content checks at another copy of the boards,
+// such as a scorer export not yet published.
+const today = readBoards(process.env.SCOREBOARD_DIR ?? join(root, 'src/content/scoreboard'));
 const { aliases } = JSON.parse(readFileSync(join(import.meta.dirname, 'fixtures/brand-registry-aliases.json'), 'utf8')) as {
   aliases: Record<string, string>;
 };
@@ -46,11 +48,33 @@ function registryBoards(days: ScoreboardDay[]): ScoreboardDay[] {
 }
 
 describe('brand redirects with the boards in src/content/scoreboard', () => {
-  const plan = planRedirects(map, builtPagePaths(today));
+  // These boards change every night and pass through a mix of old and
+  // registry slugs, so check what must hold for any content, not a count.
+  const built = builtPagePaths(today);
+  const plan = planRedirects(map, built);
+  const sources = new Set(map.map((r: Redirect) => r.source));
 
-  it('activates none, because every source page is still built', () => {
-    expect(plan.active).toEqual([]);
-    expect(plan.skipped.every((s) => s.reasons.includes('source page is still built'))).toBe(true);
+  it('accounts for every map entry once', () => {
+    expect([...plan.active, ...plan.skipped.map((s) => s.redirect)]).toHaveLength(map.length);
+  });
+
+  it('activates only entries whose source is gone and destination is built', () => {
+    expect(plan.active.filter((r) => built.has(r.source) || !built.has(r.destination))).toEqual([]);
+  });
+
+  it('skips only entries whose source is built or destination is missing, with the matching reasons', () => {
+    for (const { redirect, reasons } of plan.skipped) {
+      const expected = [
+        ...(built.has(redirect.source) ? ['source page is still built'] : []),
+        ...(built.has(redirect.destination) ? [] : ['destination page is not built']),
+      ];
+      expect(expected).not.toEqual([]);
+      expect(reasons).toEqual(expected);
+    }
+  });
+
+  it('has no entry that points to another entry', () => {
+    expect(map.filter((r) => sources.has(r.destination))).toEqual([]);
   });
 });
 
