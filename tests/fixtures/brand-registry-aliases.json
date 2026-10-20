@@ -1,0 +1,13 @@
+{
+ "_note": "Registry aliases (old brand_slug -> registry brand_slug) from email-scoreboard-shots origin/data-quality data/brands.json (eee3847). Test fixture only: tests/redirects.test.ts uses it to build registry-slug boards.",
+ "aliases": {
+  "brooklinen-friends-fam": "brooklinen",
+  "dicks-clearance": "dicks-sporting-goods",
+  "dicks-flash-sale": "dicks-sporting-goods",
+  "j-crew-friends-family": "j-crew",
+  "j-crew-new-arrivals": "j-crew",
+  "qvc-todays-special-value": "qvc",
+  "qvcs-todays-special-value": "qvc",
+  "wayfair-welcome": "wayfair"
+ }
+}
