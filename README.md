@@ -28,6 +28,16 @@ Markdown pages use `{contactEmail}` and `{emailProvider}` tokens, filled in from
 and one per tracker. Samples are in `docs/og-samples/`. The display face is Archivo Narrow 700,
 because satori cannot read WOFF2 or apply the variable font's width axis.
 
+## Brand redirects
+
+`src/data/brand-redirects.json` (copied from the scorer's `audit/proposals/brand-redirects.json`)
+maps old email and brand page URLs to their brand-registry URLs. Each build decides which entries
+go live (`src/lib/redirects.ts`): an entry is active only when the current boards no longer build
+its source page and do build its destination. `src/integrations/brand-redirects.ts` logs how many
+were included and skipped, and why, checks the plan against the built pages, and writes the active
+ones as 308 routes into `.vercel/output/config.json` (the `@astrojs/vercel` adapter's Build Output).
+Nothing is listed in `vercel.json`, so the map can land before or after the registry boards.
+
 ## Commands
 
 Requires Node 22+.
