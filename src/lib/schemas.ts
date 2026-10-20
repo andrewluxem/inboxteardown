@@ -241,9 +241,57 @@ export const pageSchema = z.strictObject({
   rubric_date: z.string().optional(),
 });
 
+/**
+ * src/data/brand-redirects.json, copied from the scorer
+ * (audit/proposals/brand-redirects.json). Old email and brand page paths to
+ * their registry paths. Which entries go live is decided at build time by
+ * src/lib/redirects.ts, never by this file alone.
+ */
+const PAGE_PATH = /^\/(email|brand)\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/;
+export const brandRedirectSchema = z.strictObject({
+  source: z.string().regex(PAGE_PATH, 'source must be /email/<id>/ or /brand/<slug>/'),
+  destination: z.string().regex(PAGE_PATH, 'destination must be /email/<id>/ or /brand/<slug>/'),
+  permanent: z.literal(true),
+});
+
+export const brandRedirectsSchema = z
+  .strictObject({
+    _note: z.string().min(1),
+    email_pages: z.number().int().min(0),
+    brand_pages: z.number().int().min(0),
+    suppressed_sends_left_out: z.number().int().min(0),
+    not_in_registry: z.array(z.string()),
+    redirects: z.array(brandRedirectSchema),
+  })
+  .superRefine((m, ctx) => {
+    const kind = (path: string) => path.split('/')[1];
+    const sources = new Set(m.redirects.map((r) => r.source));
+    const seen = new Set<string>();
+    m.redirects.forEach((r, i) => {
+      const at = (key: string) => ['redirects', i, key];
+      if (seen.has(r.source)) ctx.addIssue({ code: 'custom', path: at('source'), message: `Duplicate source ${r.source}` });
+      seen.add(r.source);
+      if (r.source === r.destination) ctx.addIssue({ code: 'custom', path: at('destination'), message: `${r.source} redirects to itself` });
+      if (kind(r.source) !== kind(r.destination)) {
+        ctx.addIssue({ code: 'custom', path: at('destination'), message: `${r.source} and ${r.destination} are different page types` });
+      }
+      if (sources.has(r.destination)) {
+        ctx.addIssue({ code: 'custom', path: at('destination'), message: `${r.destination} is itself a redirect source (a chain)` });
+      }
+    });
+    const count = (k: string) => m.redirects.filter((r) => kind(r.source) === k).length;
+    if (count('email') !== m.email_pages) {
+      ctx.addIssue({ code: 'custom', path: ['email_pages'], message: `email_pages is ${m.email_pages} but ${count('email')} email redirects are listed` });
+    }
+    if (count('brand') !== m.brand_pages) {
+      ctx.addIssue({ code: 'custom', path: ['brand_pages'], message: `brand_pages is ${m.brand_pages} but ${count('brand')} brand redirects are listed` });
+    }
+  });
+
 export type Email = z.infer<typeof emailSchema>;
 export type ScoreboardDay = z.infer<typeof scoreboardSchema>;
 export type Teardown = z.infer<typeof teardownSchema>;
 export type Tracker = z.infer<typeof trackerSchema>;
 export type Dimensions = z.infer<typeof dimensionsSchema>;
+export type BrandRedirects = z.infer<typeof brandRedirectsSchema>;
 export type CheckResult = z.infer<typeof checkSchema>['result'];
