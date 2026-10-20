@@ -5,17 +5,14 @@ import ScoreBadge from '../../components/ScoreBadge.astro';
 import { DIMENSIONS, DIMENSION_KEYS, SCORE_MAX, TOTAL_MAX } from '../../config/rubric';
 import { industryLabel } from '../../config/industries';
 import { SITE } from '../../config/site';
-import { brandSlugs, summarizeBrand, type BrandSummary } from '../../lib/brands';
+import { brandPages, type BrandSummary } from '../../lib/brands';
 import { getAllEmails, getWindowEnd } from '../../lib/content';
 import { formatMedium, formatShort } from '../../lib/dates';
 
 export const getStaticPaths = (async () => {
   const all = await getAllEmails();
   const end = await getWindowEnd();
-  return brandSlugs(all)
-    .map((slug) => summarizeBrand(all, slug, end))
-    .filter((b): b is BrandSummary => b !== undefined)
-    .map((brand) => ({ params: { slug: brand.slug }, props: { brand } }));
+  return brandPages(all, end).map((brand) => ({ params: { slug: brand.slug }, props: { brand } }));
 }) satisfies GetStaticPaths;
 
 interface Props { brand: BrandSummary }

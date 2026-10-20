@@ -78,6 +78,16 @@ export function brandSlugs(emails: FlatEmail[]): string[] {
   return [...new Set(emails.map((e) => e.brand_slug))].sort();
 }
 
+/**
+ * Every brand that gets a brand page: one with a send in the free window.
+ * The brand pages and the redirect plan (src/lib/redirects.ts) both use it.
+ */
+export function brandPages(all: FlatEmail[], end: string): BrandSummary[] {
+  return brandSlugs(all)
+    .map((slug) => summarizeBrand(all, slug, end))
+    .filter((b): b is BrandSummary => b !== undefined);
+}
+
 function latestFirst(a: { email: FlatEmail }, b: { email: FlatEmail }): number {
   return b.email.sent_at.getTime() - a.email.sent_at.getTime();
 }

@@ -1,11 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { trackerSchema, type Tracker } from '../src/lib/schemas';
-import { blackFridayDates, dayLabel, launchGrid, showsData, unknownTrackerBrands } from '../src/lib/tracker';
+import { blackFridayDates, dayLabel, launchGrid, showsData, startedDefinition, unknownTrackerBrands } from '../src/lib/tracker';
 
 describe('Black Friday dates', () => {
   it('is the day after the fourth Thursday of November, with Cyber Monday 3 days later', () => {
     expect(blackFridayDates(2026)).toEqual({ bf: '2026-11-27', cm: '2026-11-30' });
     expect(blackFridayDates(2025)).toEqual({ bf: '2025-11-28', cm: '2025-12-01' });
+  });
+});
+
+describe('started definition', () => {
+  // The public wording of the scorer's bfcm.py rule.
+  const text = startedDefinition('2026-11-02');
+  it('names the start date, every term and every field searched', () => {
+    expect(text).toContain('on or after Nov 2');
+    for (const term of ['Black Friday', 'BFCM', 'Cyber Monday', 'Cyber Week', 'Early Access alongside Black Friday or Cyber wording']) {
+      expect(text).toContain(term);
+    }
+    expect(text).toContain('subject, preheader, body (excluding the footer) and image alt text');
+  });
+  it('has no em dash', () => {
+    expect(text).not.toContain('\u2014');
   });
 });
 

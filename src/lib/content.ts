@@ -1,7 +1,7 @@
 // Build-time access to content. Cross-file rules that a per-file Zod schema
 // cannot express are enforced here and throw, which fails the build.
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { brandSlugs, flatten, summarizeBrand, windowEnd, type FlatEmail } from './brands';
+import { brandPages, brandSlugs, flatten, windowEnd, type FlatEmail } from './brands';
 import { fillSiteTokens } from './site-tokens';
 import { unknownTrackerBrands } from './tracker';
 import type { ScoreboardDay } from './schemas';
@@ -100,9 +100,7 @@ export async function getTracker(slug = CURRENT_TRACKER): Promise<CollectionEntr
 export async function getTrackedBrands(): Promise<{ slug: string; name: string }[]> {
   const all = await getAllEmails();
   const end = await getWindowEnd();
-  return brandSlugs(all)
-    .map((slug) => summarizeBrand(all, slug, end))
-    .filter((b) => b !== undefined)
+  return brandPages(all, end)
     .map((b) => ({ slug: b.slug, name: b.name }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }

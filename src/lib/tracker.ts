@@ -38,9 +38,16 @@ export function dayLabel(start: string, t?: Tracker): string {
   return `Day ${dayN} of ${totalDays}`;
 }
 
-/** What counts as a brand having "started" Black Friday, in plain words. */
+/**
+ * What counts as a brand having "started" Black Friday, in plain words. Same
+ * rule as the scorer's bfcm.py, which decides first_mention.
+ */
 export function startedDefinition(start: string): string {
-  return `A brand has started Black Friday when its first email that mentions Black Friday or Cyber Monday by name, in the subject or the body, lands in our inbox on or after ${formatShort(start)}.`;
+  return (
+    `A brand has started Black Friday with its first email in our inbox on or after ${formatShort(start)} that mentions ` +
+    'Black Friday, BFCM, Cyber Monday or Cyber Week, or says Early Access alongside Black Friday or Cyber wording. ' +
+    'We look in the subject, preheader, body (excluding the footer) and image alt text.'
+  );
 }
 
 /** Black Friday (the day after the fourth Thursday of November) and Cyber Monday. */
