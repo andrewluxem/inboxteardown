@@ -9,16 +9,18 @@ import type { Email } from '../lib/schemas';
 interface Props {
   email: Email;
   label?: string;
+  /** Shown instead of `label` when the home page's board is late. */
+  lateLabel?: string;
   /** 'best' draws a blue top rule, 'fail' a near-black one. */
   tone?: 'best' | 'fail' | 'plain';
   headingLevel?: 'h2' | 'h3';
 }
-const { email, label, tone = 'plain', headingLevel: H = 'h3' } = Astro.props;
+const { email, label, lateLabel, tone = 'plain', headingLevel: H = 'h3' } = Astro.props;
 const s = score(email);
 const low = lowestDimension(email);
 ---
 <article class:list={['mini', `mini--${tone}`]}>
-  {label && <p class="eyebrow">{label}</p>}
+  {label && <p class="eyebrow" data-late-text={lateLabel}>{label}</p>}
   <div class="mini-top">
     <H class="mini-brand"><a href={`/email/${email.id}/`}>{email.brand}</a></H>
     <ScoreBadge total={s.total} band={s.band} />
