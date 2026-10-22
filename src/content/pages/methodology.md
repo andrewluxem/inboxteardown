@@ -148,7 +148,7 @@ Held-back emails are not added to past boards later. Once a check passes review,
 
 ## Screenshots
 
-Each screenshot is captured at phone width from the copy of the email we received, with our own name and email address masked. Some images may not load if a brand's image server blocks automated viewing. A brand can ask for a screenshot to be removed by emailing {contactEmail}.
+Each screenshot is captured at phone width (375px) from the copy of the email we received, with our own name and email address masked. An email built wider than a phone, up to 800px, is captured at its own full width so nothing is cut off, and its caption says so. An email wider than that gets no screenshot. Some images may not load if a brand's image server blocks automated viewing. A brand can ask for a screenshot to be removed by emailing {contactEmail}.
 
 ## Corrections and removal
 
