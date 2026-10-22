@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { flatten, inWindow, summarizeBrand, windowEnd } from '../src/lib/brands';
+import { coveredSendDays, flatten, inWindow, summarizeBrand, windowEnd } from '../src/lib/brands';
 import type { ScoreboardDay } from '../src/lib/schemas';
 import { dims, makeEmail } from './helpers';
 
@@ -54,5 +54,46 @@ describe('brand aggregation', () => {
 
   it('returns undefined for a brand with no sends in the window', () => {
     expect(summarizeBrand(all, 'nobody', end)).toBeUndefined();
+  });
+});
+
+describe('sends per week', () => {
+  // A brand that sends every day for a week should read 7.0, not 7/30*7.
+  const week = ['2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19'];
+  const days = week.map((d) => day(d, `${d}T00:00:00Z`, 'alpha', 3)); // 6 pm MT the day before
+
+  it('divides by the send days a scoreboard covers, not the 30-day window', () => {
+    const all = flatten(days);
+    const s = summarizeBrand(all, 'alpha', windowEnd(days))!;
+    expect(coveredSendDays(all, windowEnd(days))).toEqual(['2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18']);
+    expect(s.coveredDays).toBe(7);
+    expect(s.sendsPerWeek).toBe(7);
+  });
+
+  it('leaves out a day whose board never published', () => {
+    const missing = days.filter((d) => d.date !== '2026-10-18');
+    const all = flatten(missing);
+    const s = summarizeBrand(all, 'alpha', windowEnd(missing))!;
+    expect(s.coveredDays).toBe(6);
+    expect(s.sendsPerWeek).toBe(7);
+  });
+
+  it('counts coverage across the whole panel, so a quiet brand is not inflated', () => {
+    // beta sent once in the week every board covered: 1 send over 7 days.
+    const withBeta = [...days, day('2026-10-21', '2026-10-20T00:00:00Z', 'beta', 3)];
+    const all = flatten(withBeta);
+    const s = summarizeBrand(all, 'beta', windowEnd(withBeta))!;
+    expect(s.coveredDays).toBe(8);
+    expect(s.sendsPerWeek).toBeCloseTo(7 / 8);
+  });
+
+  it('uses the full window once 30 days are covered', () => {
+    const month = Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(Date.UTC(2026, 9, 2 + i)).toISOString().slice(0, 10);
+      return day(d, `${d}T00:00:00Z`, 'alpha', 3);
+    });
+    const s = summarizeBrand(flatten(month), 'alpha', windowEnd(month))!;
+    expect(s.coveredDays).toBe(30);
+    expect(s.sendsPerWeek).toBe(7);
   });
 });

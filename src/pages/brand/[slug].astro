@@ -5,7 +5,7 @@ import ScoreBadge from '../../components/ScoreBadge.astro';
 import { DIMENSIONS, DIMENSION_KEYS, SCORE_MAX, TOTAL_MAX } from '../../config/rubric';
 import { industryLabel } from '../../config/industries';
 import { SITE } from '../../config/site';
-import { brandPages, type BrandSummary } from '../../lib/brands';
+import { brandPages, FREE_WINDOW_DAYS, type BrandSummary } from '../../lib/brands';
 import { getAllEmails, getWindowEnd } from '../../lib/content';
 import { formatMedium, formatShort } from '../../lib/dates';
 
@@ -36,7 +36,7 @@ const pct = (n: number, max: number) => `${((n / max) * 100).toFixed(1)}%`;
 
   <dl class="stats brand-stats">
     <div class="stat card"><dt class="eyebrow label">Average total</dt><dd class="value">{brand.avgTotal.toFixed(1)}<small>/{TOTAL_MAX}</small></dd></div>
-    <div class="stat card"><dt class="eyebrow label">Sends per week</dt><dd class="value">{brand.sendsPerWeek.toFixed(1)}</dd></div>
+    <div class="stat card"><dt class="eyebrow label">Sends per week</dt><dd class="value">{brand.sendsPerWeek.toFixed(1)}{brand.coveredDays < FREE_WINDOW_DAYS && <small> over {brand.coveredDays} {brand.coveredDays === 1 ? 'day' : 'days'}</small>}</dd></div>
     <div class="stat card"><dt class="eyebrow label">Hard fails</dt><dd class:list={['value', { accent: brand.hardFails > 0 }]}>{brand.hardFails}</dd></div>
   </dl>
 
