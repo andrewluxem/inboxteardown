@@ -10,7 +10,7 @@ import type { FlatEmail } from '../../lib/brands';
 import { formatDateTimeMT, formatLong, formatMedium } from '../../lib/dates';
 import { cappingDimension, lowestDimension, score } from '../../lib/scoring';
 import type { CheckResult } from '../../lib/schemas';
-import { screenshotSize } from '../../lib/shots';
+import { screenshotSize, shotCaption } from '../../lib/shots';
 
 export const getStaticPaths = (async () => {
   const emails = await getAllEmails();
@@ -64,11 +64,12 @@ const reason = cap
               alt={`Screenshot of the ${email.brand} email: ${email.subject}`}
               width={shotSize.width}
               height={shotSize.height}
+              style={`--shot-w: ${shotSize.width}px`}
               loading="lazy"
               decoding="async"
             />
           </div>
-          <figcaption class="shot-cap">As received, at phone width. <a href="/methodology/#screenshots">About screenshots</a></figcaption>
+          <figcaption class="shot-cap">{shotCaption(shotSize)} <a href="/methodology/#screenshots">About screenshots</a></figcaption>
         </figure>
       ) : (
         <div class="shot shot--empty"><p class="eyebrow">No screenshot for this send</p></div>
@@ -146,7 +147,7 @@ const reason = cap
   /* Long emails scroll inside the frame, so the page stays short on a phone. */
   .shot-frame { max-height: min(75vh, 720px); overflow-y: auto; overscroll-behavior: contain; background: #fff; }
   .shot-frame:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .shot img { display: block; width: 100%; max-width: 375px; height: auto; margin-inline: auto; }
+  .shot img { display: block; width: 100%; max-width: var(--shot-w, 375px); height: auto; margin-inline: auto; }
   .shot-cap { padding: 8px 12px; border-top: 1px solid var(--rule-2); font-size: var(--text-sm); color: var(--ink-2); }
   .shot--empty { min-height: 360px; display: grid; place-items: center; background: var(--header-bg-2); border-style: dashed; border-color: var(--rule); }
 

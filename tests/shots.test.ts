@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { imageSize } from '../src/lib/shots';
+import { imageSize, shotCaption } from '../src/lib/shots';
 
 const hex = (h: string) => Uint8Array.from(h.match(/../g)!.map((x) => parseInt(x, 16)));
 
@@ -19,5 +19,16 @@ describe('imageSize reads the header the scorer writes', () => {
   it('anything else is null', () => {
     expect(imageSize(hex('ffd8ffe000104a46494600010100000100010000ffdb004300'))).toBeNull();
     expect(imageSize(new Uint8Array())).toBeNull();
+  });
+});
+
+describe('shotCaption', () => {
+  it('a phone-width capture says phone width', () => {
+    expect(shotCaption({ width: 375, height: 2000 })).toBe('As received, at phone width.');
+  });
+  it('a wide capture names its width', () => {
+    expect(shotCaption({ width: 640, height: 2000 })).toBe(
+      "As received, at the email's full width (640px), which is wider than a phone.",
+    );
   });
 });
