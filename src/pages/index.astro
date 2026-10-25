@@ -8,7 +8,7 @@ import TrackerRailCard from '../components/TrackerRailCard.astro';
 import HowScoresCard from '../components/HowScoresCard.astro';
 import { TOTAL_MAX } from '../config/rubric';
 import { getLatestDay, getTeardowns } from '../lib/content';
-import { formatLong, formatTimeMT } from '../lib/dates';
+import { addDays, formatLong, formatShort, formatTimeMT } from '../lib/dates';
 import { average, bestAndWorst, rank } from '../lib/scoring';
 import { ogPath } from '../lib/og';
 
@@ -21,14 +21,19 @@ const teardown = (await getTeardowns())[0];
 // island recomputes them for the default "Campaigns only" view.
 const avg = average(ranked.map((s) => s.total));
 const fails = ranked.filter((s) => s.capped).length;
+
+// Board D scores the sends of D-1. When the next board is overdue (see
+// src/lib/freshness.ts), the script below swaps "yesterday" wording for
+// the day this board covers and shows the late notice.
+const sendsDay = addDays(day.date, -1);
 ---
 <Base description={`Every marketing email we received yesterday, scored out of ${TOTAL_MAX}. Updated each morning at 7:00 am MT.`} ogImage={ogPath.home}>
   <div class="with-rail">
-    <div class="main">
+    <div class="main" data-board-date={day.date}>
       <header class="hero">
         <div>
           <p class="eyebrow">Daily Scoreboard · {formatLong(day.date)} · {formatTimeMT(day.generated_at)}</p>
-          <h1 class="display">Yesterday's sends, scored</h1>
+          <h1 class="display" data-late-text={`Sends from ${formatShort(sendsDay)}, scored`}>Yesterday's sends, scored</h1>
         </div>
         <dl class="stats hero-stats" aria-live="polite">
           <div class="stat"><dt class="eyebrow label">Emails shown</dt><dd class="value" data-stat="count">{ranked.length}</dd></div>
@@ -37,9 +42,13 @@ const fails = ranked.filter((s) => s.capped).length;
         </dl>
       </header>
 
+      <p class="late-notice" role="status" data-late-notice hidden>
+        Today's board is running late. This is the most recent one, covering emails sent {formatLong(sendsDay)}. The next board shows up here as soon as it's ready.
+      </p>
+
       <div class="pair">
-        {best && <EmailMiniCard email={best.email} label="Best send yesterday" tone="best" />}
-        {worst && <EmailMiniCard email={worst.email} label={worstIsCap ? 'Hard fail yesterday' : 'Lowest score yesterday'} tone="fail" />}
+        {best && <EmailMiniCard email={best.email} label="Best send yesterday" lateLabel="Best send" tone="best" />}
+        {worst && <EmailMiniCard email={worst.email} label={worstIsCap ? 'Hard fail yesterday' : 'Lowest score yesterday'} lateLabel={worstIsCap ? 'Hard fail' : 'Lowest score'} tone="fail" />}
       </div>
 
       <section class="section" aria-labelledby="board-heading">
@@ -57,6 +66,18 @@ const fails = ranked.filter((s) => s.capped).length;
   </div>
 </Base>
 
+<script>
+  import { isBoardLate } from '../lib/freshness';
+
+  const main = document.querySelector<HTMLElement>('[data-board-date]');
+  if (main?.dataset.boardDate && isBoardLate(main.dataset.boardDate, new Date())) {
+    for (const el of main.querySelectorAll<HTMLElement>('[data-late-text]')) {
+      el.textContent = el.dataset.lateText ?? el.textContent;
+    }
+    main.querySelector('[data-late-notice]')?.removeAttribute('hidden');
+  }
+</script>
+
 <style>
   .hero { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px 40px; }
   .hero > div:first-child { flex: 1 1 400px; min-width: 0; }
@@ -67,5 +88,6 @@ const fails = ranked.filter((s) => s.capped).length;
     .hero-stats .value { font-size: 1.625rem; }
   }
   .hero-stats .stat { display: flex; flex-direction: column-reverse; }
+  .late-notice { margin-top: 28px; padding: 14px 18px; border: 1px solid var(--rule); border-left: 6px solid var(--ink); background: var(--surface); font-size: var(--text-sm); color: var(--ink-2); }
   .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 36px; }
 </style>
