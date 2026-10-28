@@ -22,6 +22,9 @@ emails:                             # at least one
     industry: ecommerce                # see industries below
     kind: campaign                     # campaign | welcome | transactional
     sent_at: 2026-10-07T00:42:00Z      # ISO 8601; the brand page buckets by MT calendar date
+    send_index: 2                      # optional; this send's place among the brand's sends on this board
+    send_count: 3                      # optional; how many sends the brand has on this board
+    sent_at_local: "2026-10-06T18:42:00-06:00"  # optional; the send time in MT, quoted, with its offset
     subject: "LAST CHANCE!!! Ends tonight"
     preheader: "View this email in your browser"   # optional, defaults to ""
     themes: [last chance, "% off", countdown]      # optional, defaults to []
@@ -66,6 +69,15 @@ Rules:
   `*`, `!`, or contains `: `.
 - `correction` is optional. When present, the scorecard shows "Corrected {date}: {note}" in the
   verdict block. Update the dimension scores themselves to the corrected values.
+- `send_index`, `send_count` and `sent_at_local` are optional and set by the
+  scorer's export, once per board: the brand's sends on that board (by
+  `brand_slug`, withheld sends not counted) ordered by send time, 1-based.
+  `send_index` and `send_count` go together; `sent_at_local` only with them.
+  A brand's emails on a board all carry them or none do, numbered 1..n with
+  `send_count` n. When `send_count` is 2 or more the board row, the best and
+  lowest cards and the scorecard show "2nd of 3"; filters on the board never
+  change it. Boards exported before Oct 28, 2026 have none and show no order.
+  This is not the `-N` in the id, which is not always in send order.
 - Unknown keys anywhere in an email fail the build.
 
 ### Hard-fail evidence gate (standing rule)

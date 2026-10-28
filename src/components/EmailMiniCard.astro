@@ -1,6 +1,7 @@
 ---
 // Compact scorecard used in the best/worst pair and inside teardowns.
 import ScoreBadge from './ScoreBadge.astro';
+import SendOrdinal from './SendOrdinal.astro';
 import { DIMENSIONS } from '../config/rubric';
 import { industryLabel } from '../config/industries';
 import { lowestDimension, score } from '../lib/scoring';
@@ -24,7 +25,7 @@ const low = lowestDimension(email);
     <ScoreBadge total={s.total} band={s.band} />
   </div>
   <p class="mini-subject">"{email.subject}"</p>
-  <p class="mini-meta eyebrow">{industryLabel(email.industry)} · {email.kind}</p>
+  <p class="mini-meta"><span class="eyebrow">{industryLabel(email.industry)} · {email.kind}</span> <SendOrdinal email={email} /></p>
   <p class="mini-note"><span class="mono mini-dim">{DIMENSIONS[low]} {email.dimensions[low].score}/5:</span> {email.dimensions[low].note}</p>
 </article>
 <style>

@@ -7,18 +7,21 @@ import { SITE, mailto } from '../../config/site';
 import { industryLabel } from '../../config/industries';
 import { getAllEmails } from '../../lib/content';
 import type { FlatEmail } from '../../lib/brands';
-import { formatDateTimeMT, formatLong, formatMedium } from '../../lib/dates';
+import { formatDateTimeMT, formatLong, formatMedium, formatShort, formatTimeMT, mtDate } from '../../lib/dates';
+import { boardSiblings, ordinal, sendOrdinal, sendTime } from '../../lib/sends';
 import { cappingDimension, lowestDimension, score } from '../../lib/scoring';
 import type { CheckResult } from '../../lib/schemas';
 import { screenshotSize, shotCaption } from '../../lib/shots';
 
 export const getStaticPaths = (async () => {
   const emails = await getAllEmails();
-  return emails.map((email) => ({ params: { id: email.id }, props: { email } }));
+  return emails.map((email) => ({ params: { id: email.id }, props: { email, siblings: boardSiblings(emails, email) } }));
 }) satisfies GetStaticPaths;
 
-interface Props { email: FlatEmail }
-const { email } = Astro.props;
+interface Props { email: FlatEmail; siblings: FlatEmail[] }
+const { email, siblings } = Astro.props;
+const order = sendOrdinal(email);
+const sentAt = sendTime(email);
 const s = score(email);
 const cap = cappingDimension(email);
 const low = lowestDimension(email);
@@ -50,6 +53,22 @@ const reason = cap
         <div><dt class="eyebrow">Subject</dt><dd class="meta-subject">{email.subject}</dd></div>
         <div><dt class="eyebrow">Preheader</dt><dd>{email.preheader || <span class="muted">(none)</span>}</dd></div>
         <div><dt class="eyebrow">Sent</dt><dd class="num">{formatDateTimeMT(email.sent_at)}</dd></div>
+        {order && siblings.length > 1 && (
+          <div><dt class="eyebrow">Order</dt><dd>
+            <p>{order} sends from {email.brand} on {formatShort(mtDate(sentAt))}, {formatTimeMT(sentAt)}</p>
+            <ol class="siblings" aria-label={`${email.brand} sends that day`}>
+              {siblings.map((sib) => (
+                <li class:list={['sibling', { 'sibling--current': sib.id === email.id }]}>
+                  <span class="sibling-n mono">{ordinal(sib.send_index!)}</span>
+                  <span class="sibling-time mono">{formatTimeMT(sendTime(sib))}</span>
+                  {sib.id === email.id
+                    ? <span class="sibling-subject" aria-current="page">{sib.subject}</span>
+                    : <a class="sibling-subject" href={`/email/${sib.id}/`}>{sib.subject}</a>}
+                </li>
+              ))}
+            </ol>
+          </dd></div>
+        )}
         <div><dt class="eyebrow">Type · Industry</dt><dd>{kindLabel[email.kind]} · {industryLabel(email.industry)}</dd></div>
         <div><dt class="eyebrow">Themes</dt><dd>
           {email.themes.length ? <ul class="chips">{email.themes.map((t) => <li class="chip">{t}</li>)}</ul> : <span class="muted">None tagged</span>}
@@ -142,6 +161,13 @@ const reason = cap
   .meta-subject { font-weight: 600; }
   .meta .chips { gap: 6px; }
   .meta .chip { min-height: 28px; padding: 2px 8px; }
+
+  .siblings { list-style: none; padding: 0; margin-top: 10px; display: grid; gap: 8px; }
+  /* ordinal and time on one line, the subject under them: the column is narrow on a phone */
+  .sibling { display: grid; grid-template-columns: 2.5em minmax(0, 1fr); gap: 0 8px; font-size: var(--text-sm); }
+  .sibling-n, .sibling-time { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+  .sibling-subject { grid-column: 1 / -1; min-width: 0; overflow-wrap: break-word; }
+  .sibling--current .sibling-subject { font-weight: 600; }
 
   .shot { margin-top: 16px; border: 1px solid var(--rule); background: var(--surface); }
   /* Long emails scroll inside the frame, so the page stays short on a phone. */
