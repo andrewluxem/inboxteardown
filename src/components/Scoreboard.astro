@@ -1,9 +1,11 @@
 ---
 import ScoreBadge from './ScoreBadge.astro';
 import Legend from './Legend.astro';
+import SendOrdinal from './SendOrdinal.astro';
 import { INDUSTRY_KEYS, industryLabel } from '../config/industries';
 import { DIMENSIONS } from '../config/rubric';
 import { cappingDimension, type Scored } from '../lib/scoring';
+import { sendOrdinal } from '../lib/sends';
 import type { Email } from '../lib/schemas';
 
 interface Props { ranked: Scored<Email>[] }
@@ -52,7 +54,10 @@ const kindLabel = { campaign: 'Campaign', welcome: 'Welcome', transactional: 'Tr
           return (
             <li class="row" data-industry={s.email.industry} data-kind={s.email.kind} data-total={s.total} data-capped={String(s.capped)}>
               <span class="c-rank num" data-rank>{i + 1}</span>
-              <span class="c-brand">{s.email.brand}<span class="c-industry-inline"> · {industryLabel(s.email.industry)}</span></span>
+              <span class="c-brand">
+                {s.email.brand}<span class="c-industry-inline"> · {industryLabel(s.email.industry)}</span>
+                {sendOrdinal(s.email) && <span class="c-ordinal"><span class="c-ordinal-sep"> · </span><SendOrdinal email={s.email} /></span>}
+              </span>
               <span class="c-industry">{industryLabel(s.email.industry)}</span>
               <span class="c-subject">
                 <a class="row-link" href={`/email/${s.email.id}/`}>{s.email.subject}</a>
@@ -113,6 +118,8 @@ const kindLabel = { campaign: 'Campaign', welcome: 'Welcome', transactional: 'Tr
   .c-brand { font-weight: 600; }
   .c-industry, .c-type { font-size: var(--text-sm); color: var(--ink-2); }
   .c-industry-inline { display: none; }
+  .c-ordinal { display: block; margin-top: 2px; font-weight: 400; }
+  .c-ordinal-sep { display: none; }
   .c-score { justify-self: end; }
   .flag { display: block; margin-top: 2px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .board-empty { padding: 24px 16px; color: var(--muted); border-top: 1px solid var(--rule-2); }
@@ -131,6 +138,8 @@ const kindLabel = { campaign: 'Campaign', welcome: 'Welcome', transactional: 'Tr
     }
     .c-rank, .c-industry, .c-type { display: none; }
     .c-industry-inline { display: inline; font-weight: 400; color: var(--muted); }
+    .c-ordinal { display: inline; margin-top: 0; }
+    .c-ordinal-sep { display: inline; color: var(--muted); }
     .c-brand { grid-area: brand; font-size: var(--text-sm); }
     .c-subject { grid-area: subject; }
     .c-score { grid-area: score; justify-self: stretch; align-self: center; }

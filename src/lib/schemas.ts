@@ -48,6 +48,9 @@ export const isoDate = z.preprocess(
 /** Full timestamps (ISO 8601 with offset). */
 export const isoDateTime = z.coerce.date();
 
+/** An ISO 8601 date-time string with a numeric offset, kept as written. */
+const ISO_OFFSET = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?[+-]\d{2}:\d{2}$/;
+
 export const industrySchema = z.enum(INDUSTRY_KEYS);
 export const kindSchema = z.enum(['campaign', 'welcome', 'transactional']);
 
@@ -84,6 +87,13 @@ const emailBase = z.strictObject({
   industry: industrySchema,
   kind: kindSchema,
   sent_at: isoDateTime,
+  // Order among the brand's sends on this board (1-based) and how many there
+  // were; set by the exporter once per board, so filters never change them.
+  // Absent on boards exported before Oct 28, 2026.
+  send_index: z.number().int().min(1).optional(),
+  send_count: z.number().int().min(1).optional(),
+  // The send time in Mountain Time with its offset, e.g. 2026-10-26T14:14:00-06:00.
+  sent_at_local: z.string().regex(ISO_OFFSET, 'sent_at_local must be ISO 8601 with an offset').optional(),
   subject: z.string().min(1),
   preheader: z.string().default(''),
   themes: z.array(z.string().min(1)).default([]),
@@ -114,6 +124,14 @@ const emailBase = z.strictObject({
  * failed check with a non-empty detail. A cap with no evidence fails the build.
  */
 export const emailSchema = emailBase.superRefine((e, ctx) => {
+  if ((e.send_index === undefined) !== (e.send_count === undefined)) {
+    ctx.addIssue({ code: 'custom', path: ['send_index'], message: 'send_index and send_count go together' });
+  } else if (e.send_index !== undefined && e.send_count !== undefined && e.send_index > e.send_count) {
+    ctx.addIssue({ code: 'custom', path: ['send_index'], message: `send_index ${e.send_index} is more than send_count ${e.send_count}` });
+  }
+  if (e.sent_at_local !== undefined && e.send_index === undefined) {
+    ctx.addIssue({ code: 'custom', path: ['sent_at_local'], message: 'sent_at_local only with send_index' });
+  }
   const capped = (['trust', 'technical_hygiene'] as const).filter((k) => e.dimensions[k].score === 1);
   if (!capped.length) return;
   const evidenced = e.checks.some((c) => c.result === 'fail' && (c.detail ?? '').trim().length > 0);
@@ -143,6 +161,27 @@ export const scoreboardSchema = z
       }
       seen.add(e.id);
     });
+    // A brand's emails all carry send order or none do; those that do are
+    // numbered 1..n, n being that brand's emails on this board.
+    const byBrand = new Map<string, number[]>();
+    day.emails.forEach((e, i) => byBrand.set(e.brand_slug, [...(byBrand.get(e.brand_slug) ?? []), i]));
+    for (const [slug, idx] of byBrand) {
+      const have = idx.filter((i) => day.emails[i]!.send_index !== undefined);
+      if (!have.length) continue;
+      if (have.length !== idx.length) {
+        ctx.addIssue({ code: 'custom', path: ['emails', idx[0]!, 'send_index'], message: `brand ${slug}: send_index on ${have.length} of its ${idx.length} emails; all or none` });
+        continue;
+      }
+      for (const i of idx) {
+        if (day.emails[i]!.send_count !== idx.length) {
+          ctx.addIssue({ code: 'custom', path: ['emails', i, 'send_count'], message: `brand ${slug} has ${idx.length} email(s) on this board` });
+        }
+      }
+      const got = idx.map((i) => day.emails[i]!.send_index!).sort((a, b) => a - b);
+      if (got.some((n, k) => n !== k + 1)) {
+        ctx.addIssue({ code: 'custom', path: ['emails', idx[0]!, 'send_index'], message: `brand ${slug}: send_index must be 1..${idx.length}, once each` });
+      }
+    }
   });
 
 export const teardownSchema = z.strictObject({
