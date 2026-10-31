@@ -13,7 +13,8 @@ export interface Size {
 
 export const FALLBACK_SIZE: Size = { width: 375, height: 667 };
 /** The phone viewport the scorer captures at; a wider capture is an email
- * built wider than a phone (up to 800px), shot at its own width. */
+ * built wider than a phone (up to 800px), shot at its own width. Wider than
+ * 800px, the scorer shrinks the capture to this width. */
 export const PHONE_WIDTH = 375;
 const HEADER_BYTES = 64;
 const TIMEOUT_MS = 10_000;
