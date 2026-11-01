@@ -83,8 +83,8 @@ The fictional fixture boards, teardowns and tracker were removed when the first 
 (2026-10-13 and 2026-10-14) were published with `scripts/publish_board.sh` from the scorer repo.
 With no teardown files the archive shows a "first teardown is on its way" note; with no tracker
 file `/tracker/black-friday-2026/` shows a noindex "Starts Nov 2" page that stays out of the nav
-and sitemap. The screenshots in `docs/screenshots/` still show fixture data; regenerate them with
-`npm run screenshots`.
+and sitemap. The screenshots in `docs/screenshots/` show the real 2026-10-14 boards (commit
+f0ca8db), so they name real brands, not fixtures; regenerate them with `npm run screenshots`.
 
 `tests/fixtures/malformed-scoreboard.md` is a test fixture, not site content. Keep it.
 
