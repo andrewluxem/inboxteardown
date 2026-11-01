@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/banner.svg" alt="inboxteardown: Static site for inboxteardown.com: a daily email scoreboard, scorecards and weekly teardowns" width="100%"></p>
+
 # Inbox Teardown
 
 The public, free-tier site for [inboxteardown.com](https://inboxteardown.com): a daily email

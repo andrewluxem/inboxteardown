@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300" role="img" aria-labelledby="t d">
+<title id="t">inboxteardown</title>
+<desc id="d">Three panels, all from the fictional example in docs/CONTENT-CONTRACT.md. 1, a promo email from Kestrel Outdoor with the subject LAST CHANCE!!! Ends tonight and the preheader View this email in your browser. 2, its eight rubric dimensions scored 1 to 5: Subject &amp; preheader 2, Clarity 4, Design &amp; hierarchy 4, Copy &amp; voice 4, Call to action 4, Relevance 3, Trust 4, Technical hygiene 1. 3, the site's scoring code on that example: Capped, 26/40, Technical hygiene scored 1, which caps the email regardless of its total; bands Strong 33-40, Solid 24-32, Weak under 24.</desc>
+<style>
+.serif{font-family:Georgia,"Times New Roman",serif}
+.sans{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+.lab{font-size:10px;letter-spacing:1.8px;font-weight:600}
+.cap{font-size:11.5px;fill:#8b9096}
+.hl{fill:none;stroke-width:1.5;opacity:0}
+.h1{animation:h1 12s infinite}
+.h2{animation:h2 12s infinite}
+.h3{animation:h3 12s infinite}
+.r1{animation:r1 12s infinite}
+.r2{animation:r2 12s infinite}
+.r3{animation:r3 12s infinite}
+.r4{animation:r4 12s infinite}
+.rb{animation:rb 12s infinite}
+.rc{animation:rc 12s infinite}
+.rd{animation:rd 12s infinite}
+.re{animation:re 12s infinite}
+.rf{animation:rf 12s infinite}
+.rg{animation:rg 12s infinite}
+.rh{animation:rh 12s infinite}
+.ri{animation:ri 12s infinite}
+.rj{animation:rj 12s infinite}
+.rk{animation:rk 12s infinite}
+.rl{animation:rl 12s infinite}
+.rm{animation:rm 12s infinite}
+@keyframes h1{0%,16.7%{opacity:0}18.7%,42.4%{opacity:1}44.1%,100%{opacity:0}}
+@keyframes h2{0%,16.7%,18.7%,44.1%{opacity:0}45.8%,67.8%{opacity:1}69.5%,100%{opacity:0}}
+@keyframes h3{0%,16.7%,18.7%,69.5%{opacity:0}71.2%,94.9%{opacity:1}96.6%,100%{opacity:0}}
+@keyframes r1{0%,16.7%{opacity:1}18.7%,20.4%{opacity:0}22.1%,100%{opacity:1}}
+@keyframes r2{0%,16.7%{opacity:1}18.7%,24.6%{opacity:0}26.3%,100%{opacity:1}}
+@keyframes r3{0%,16.7%{opacity:1}18.7%,28.9%{opacity:0}30.6%,100%{opacity:1}}
+@keyframes r4{0%,16.7%{opacity:1}18.7%,33.1%{opacity:0}34.8%,100%{opacity:1}}
+@keyframes rb{0%,16.7%{opacity:1}18.7%,45%{opacity:0}46.6%,100%{opacity:1}}
+@keyframes rc{0%,16.7%{opacity:1}18.7%,47.5%{opacity:0}49.2%,100%{opacity:1}}
+@keyframes rd{0%,16.7%{opacity:1}18.7%,50%{opacity:0}51.7%,100%{opacity:1}}
+@keyframes re{0%,16.7%{opacity:1}18.7%,52.6%{opacity:0}54.3%,100%{opacity:1}}
+@keyframes rf{0%,16.7%{opacity:1}18.7%,55.1%{opacity:0}56.8%,100%{opacity:1}}
+@keyframes rg{0%,16.7%{opacity:1}18.7%,57.7%{opacity:0}59.3%,100%{opacity:1}}
+@keyframes rh{0%,16.7%{opacity:1}18.7%,60.2%{opacity:0}61.9%,100%{opacity:1}}
+@keyframes ri{0%,16.7%{opacity:1}18.7%,62.7%{opacity:0}64.4%,100%{opacity:1}}
+@keyframes rj{0%,16.7%{opacity:1}18.7%,65.3%{opacity:0}67%,100%{opacity:1}}
+@keyframes rk{0%,16.7%{opacity:1}18.7%,72.1%{opacity:0}73.7%,100%{opacity:1}}
+@keyframes rl{0%,16.7%{opacity:1}18.7%,78%{opacity:0}79.7%,100%{opacity:1}}
+@keyframes rm{0%,16.7%{opacity:1}18.7%,84.8%{opacity:0}86.5%,100%{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="900" height="300" fill="#141618"/>
+
+<text x="32" y="50" class="serif" font-size="28" fill="#e4dfd4">inboxteardown</text>
+<text x="236" y="50" class="sans" font-size="13.5" fill="#a9adb2">Static site for inboxteardown.com: a daily email scoreboard, scorecards and weekly teardowns</text>
+
+<g>
+<text x="32" y="88" class="sans lab" fill="#a39bbd">1 · A PROMO SEND</text>
+<rect x="32" y="98" width="252" height="152" rx="3" fill="#1b1e21" stroke="#2e3237"/>
+<rect class="hl h1" x="32" y="98" width="252" height="152" rx="3" stroke="#a39bbd"/>
+<text x="44" y="115" class="mono" font-size="10" fill="#8b9096">docs/CONTENT-CONTRACT.md · example</text>
+<line x1="33" y1="123" x2="283" y2="123" stroke="#2e3237"/>
+<g class="r1"><text x="44" y="147" class="mono" font-size="10" fill="#8b9096">From</text><text x="106" y="147" class="sans" font-size="10.5" fill="#e4dfd4" font-weight="700">Kestrel Outdoor</text></g>
+<g class="r2"><text x="44" y="171" class="mono" font-size="10" fill="#8b9096">Subject</text><text x="106" y="171" class="sans" font-size="10.5" fill="#e4dfd4">LAST CHANCE!!! Ends tonight</text></g>
+<g class="r3"><text x="44" y="195" class="mono" font-size="10" fill="#8b9096">Preheader</text><text x="106" y="195" class="sans" font-size="10.5" fill="#a9adb2">View this email in your browser</text></g>
+<g class="r4"><line x1="44" y1="208.5" x2="272" y2="208.5" stroke="#2e3237"/><g fill="#3d4248"><rect x="44" y="218" width="210" height="3"/><rect x="44" y="225" width="196" height="3"/><rect x="44" y="232" width="120" height="3"/></g></g>
+<rect class="rj" x="102" y="160" width="152" height="15" fill="none" stroke="#c8963e" stroke-dasharray="3 2"/>
+<text x="32" y="272" class="sans cap">Shouty subject, template preheader.</text>
+</g>
+
+<g>
+<text x="304" y="88" class="sans lab" fill="#c8963e">2 · EIGHT DIMENSIONS, 1 TO 5</text>
+<rect x="304" y="98" width="292" height="152" rx="3" fill="#17191c" stroke="#2e3237"/>
+<rect class="hl h2" x="304" y="98" width="292" height="152" rx="3" stroke="#c8963e"/>
+<text x="316" y="115" class="mono" font-size="10" fill="#8b9096">rubric.ts names · example scores</text>
+<line x1="305" y1="123" x2="595" y2="123" stroke="#2e3237"/>
+<g class="rb"><text x="316" y="147" class="sans" font-size="10.5" fill="#e4dfd4">Subject &amp; preheader</text><text x="444" y="147" class="mono" font-size="11" fill="#c8963e" text-anchor="end">2</text></g>
+<g class="rc"><text x="316" y="171" class="sans" font-size="10.5" fill="#e4dfd4">Clarity</text><text x="444" y="171" class="mono" font-size="11" fill="#e4dfd4" text-anchor="end">4</text></g>
+<g class="rd"><text x="316" y="195" class="sans" font-size="10.5" fill="#e4dfd4">Design &amp; hierarchy</text><text x="444" y="195" class="mono" font-size="11" fill="#e4dfd4" text-anchor="end">4</text></g>
+<g class="re"><text x="316" y="219" class="sans" font-size="10.5" fill="#e4dfd4">Copy &amp; voice</text><text x="444" y="219" class="mono" font-size="11" fill="#e4dfd4" text-anchor="end">4</text></g>
+<g class="rf"><text x="460" y="147" class="sans" font-size="10.5" fill="#e4dfd4">Call to action</text><text x="588" y="147" class="mono" font-size="11" fill="#e4dfd4" text-anchor="end">4</text></g>
+<g class="rg"><text x="460" y="171" class="sans" font-size="10.5" fill="#e4dfd4">Relevance</text><text x="588" y="171" class="mono" font-size="11" fill="#e4dfd4" text-anchor="end">3</text></g>
+<g class="rh"><text x="460" y="195" class="sans" font-size="10.5" fill="#e4dfd4">Trust</text><text x="588" y="195" class="mono" font-size="11" fill="#e4dfd4" text-anchor="end">4</text></g>
+<g class="ri"><text x="460" y="219" class="sans" font-size="10.5" fill="#e4dfd4">Technical hygiene</text><text x="588" y="219" class="mono" font-size="11" fill="#c8963e" text-anchor="end">1</text></g>
+<rect class="rj" x="456" y="207" width="134" height="17" fill="none" stroke="#c8963e" stroke-dasharray="3 2"/>
+<text x="304" y="272" class="sans cap">The site sums the scores and applies the cap.</text>
+</g>
+
+<g>
+<text x="616" y="88" class="sans lab" fill="#93ad8c">3 · A PUBLIC SCORECARD</text>
+<rect x="616" y="98" width="252" height="152" rx="3" fill="#1b1e21" stroke="#2e3237"/>
+<rect class="hl h3" x="616" y="98" width="252" height="152" rx="3" stroke="#93ad8c"/>
+<text x="628" y="115" class="mono" font-size="10" fill="#8b9096">src/lib/scoring.ts output</text>
+<line x1="617" y1="123" x2="867" y2="123" stroke="#2e3237"/>
+<g class="rk"><text x="628" y="142" class="mono" font-size="10" fill="#8b9096">Verdict · Rubric v1.0</text><text x="628" y="174" class="serif" font-size="24" fill="#c8963e">Capped</text><text x="720" y="174" class="mono" font-size="15" fill="#e4dfd4" font-weight="700">26</text><text x="738" y="174" class="mono" font-size="11" fill="#8b9096">/40</text></g>
+<g class="rl"><text x="628" y="196" class="sans" font-size="10.5" fill="#a9adb2">Technical hygiene scored 1, which caps</text><text x="628" y="210" class="sans" font-size="10.5" fill="#a9adb2">the email regardless of its total.</text></g>
+<g class="rm"><line x1="628" y1="221.5" x2="856" y2="221.5" stroke="#2e3237"/><text x="628" y="239" class="sans" font-size="10" fill="#e4dfd4">Strong <tspan fill="#8b9096">33-40</tspan></text><text x="698" y="239" class="sans" font-size="10" fill="#e4dfd4">Solid <tspan fill="#8b9096">24-32</tspan></text><text x="764" y="239" class="sans" font-size="10" fill="#e4dfd4">Weak <tspan fill="#8b9096">under 24</tspan></text></g>
+<text x="616" y="272" class="sans" font-size="11.5" fill="#93ad8c">A 1 on Trust or hygiene caps the email.</text>
+</g>
+</svg>
