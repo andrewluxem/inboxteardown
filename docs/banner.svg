@@ -51,7 +51,7 @@
 <rect width="900" height="300" fill="#141618"/>
 
 <text x="32" y="50" class="serif" font-size="28" fill="#e4dfd4">inboxteardown</text>
-<text x="236" y="50" class="sans" font-size="13.5" fill="#a9adb2">Static site for inboxteardown.com: a daily email scoreboard, scorecards and weekly teardowns</text>
+<text x="236" y="50" class="sans" font-size="13.5" fill="#a9adb2">Static site for inboxteardown.com: a daily email scoreboard and scorecards</text>
 
 <g>
 <text x="32" y="88" class="sans lab" fill="#a39bbd">1 · A PROMO SEND</text>
