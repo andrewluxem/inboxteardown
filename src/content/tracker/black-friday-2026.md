@@ -4,9 +4,9 @@ title: "Black Friday 2026 tracker"
 start: 2026-11-02
 end: 2026-11-30
 cohort_frozen: 2026-11-01
-published: false
+published: true
 cohort_size: 46
-updated_at: 2026-11-03T08:02:46Z
+updated_at: 2026-11-03T16:16:21Z
 october_avg_score: 25.9
 days:
   - { date: 2026-11-02, launched_cumulative: 2, sends: 39, sends_vs_baseline: 9 }
