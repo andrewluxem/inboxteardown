@@ -159,7 +159,8 @@ The tracker page is built from this file alone. It is served at
 The page is always public: indexable, in the sitemap and the nav, and linked
 from the home page. `published` only decides whether the data shows. Until
 the file says `published: true` and has at least one day (or while there is
-no file), the page is the pre-start page: "Starts Nov 2", what counts as
+no file), the page is the pre-start page: "First update Nov 3" (the day
+after `start`, when the first daily update appears), what counts as
 started, the brands on the scoreboard now, and the signup form, with no
 banner. The page, its OG image and the home card never show "Day 0" or
 unpublished numbers.
@@ -180,6 +181,8 @@ days:                         # each date must fall within start..end
 brands:
   - { brand: Kestrel Outdoor, brand_slug: kestrel-outdoor, first_mention: 2026-11-02, discount: 30, sends_since: 14, avg_score: 27.4 }
     # discount: headline % off as a number 0 to 100, or null when there is none
+  - { brand: Juniper Home, brand_slug: juniper-home, first_mention: 2026-10-24, discount: null, sends_since: 9, avg_score: 25.1, pre_start: true }
+    # pre_start (addition, optional): true when first_mention is before start
 categories:
   - { industry: ecommerce, sends_vs_baseline: 72 }
 ---
@@ -191,12 +194,20 @@ Rules (the schema enforces them; the brand check runs at build):
 - In date order, `launched_cumulative` never decreases.
 - The latest day's `launched_cumulative` equals the number of `brands`
   (zero brands when `days` is empty).
-- Every `brands[].first_mention` is on or after `start`.
+- Every `brands[].first_mention` is on or after 2026-10-19
+  (`MENTIONS_RECORDED_SINCE` in `src/lib/schemas.ts`: the first send date
+  whose scorer records carry the Black Friday match).
+- `brands[].pre_start` is `true` exactly when `first_mention` is before
+  `start`, and absent otherwise. Such a brand counts as launched from the
+  first day. The page shows its first mention as "Before Nov 2" (the start
+  date), never the date, because mentions before 2026-10-19 are not
+  recorded; pre-start rows sort first, by name.
 - Every `brands[].brand_slug` exists in a scoreboard file.
 
-`updated_at` and `october_avg_score` were added beyond the original spec,
-because the page needs an update time and an October baseline and must be
-built from this file alone. Both are optional.
+`updated_at`, `october_avg_score` and `brands[].pre_start` were added beyond
+the original spec, because the page needs an update time, an October
+baseline and a way to mark mentions before `start`, and must be built from
+this file alone. All three are optional; files without them still validate.
 
 ## Pages: `src/content/pages/*.md`
 

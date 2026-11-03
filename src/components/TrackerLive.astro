@@ -8,7 +8,7 @@ import { brandSlugs } from '../lib/brands';
 import { getAllEmails } from '../lib/content';
 import { formatDateTimeMT, formatMedium, formatShort } from '../lib/dates';
 import { ogPath } from '../lib/og';
-import { dayLabel, launchGrid, startedDefinition, trackerProgress } from '../lib/tracker';
+import { dayLabel, earliestMention, firstMentionRows, launchGrid, preStartLabel, preStartNote, startedDefinition, trackerProgress } from '../lib/tracker';
 import { median } from '../lib/scoring';
 import type { Tracker } from '../lib/schemas';
 
@@ -21,8 +21,8 @@ const { calendar, axis } = launchGrid(t.start, t.end);
 const byDate = new Map(t.days.map((d) => [d.date, d]));
 const { latest, launched } = trackerProgress(t);
 
-const brands = [...t.brands].sort((a, b) => a.first_mention.localeCompare(b.first_mention) || a.brand.localeCompare(b.brand));
-const earliest = brands[0];
+const brands = firstMentionRows(t.brands);
+const earliest = earliestMention(t);
 const discounts = t.brands.map((b) => b.discount).filter((d): d is number => d !== null);
 const medianDiscount = median(discounts);
 const bfSends = t.brands.reduce((n, b) => n + b.sends_since, 0);
@@ -38,12 +38,12 @@ const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatM
   <p class="eyebrow num">{t.title} · {dayLabel(t.start, t)} · Updated {updated}</p>
   <h1 class="display bf-h1"><span class="accent">{launched} of {t.cohort_size}</span> brands have started Black Friday</h1>
   <p class="lede bf-lede">Cohort of {t.cohort_size} brands, frozen {formatMedium(t.cohort_frozen)}. Tracking runs {formatShort(t.start)} to {formatShort(t.end)}.</p>
-  <p class="bf-def">{startedDefinition(t.start)}</p>
+  <p class="bf-def">{startedDefinition()} {preStartNote(t.start)}</p>
 
   <dl class="bf-stats">
     <div class="card stat">
       <dt class="eyebrow label">Earliest mention</dt>
-      <dd class="value">{earliest ? formatShort(earliest.first_mention) : 'None yet'}</dd>
+      <dd class="value">{earliest ? earliest.label : 'None yet'}</dd>
       {earliest && <dd class="stat-sub">{earliest.brand}</dd>}
     </div>
     <div class="card stat">
@@ -105,7 +105,7 @@ const updated = t.updated_at ? formatDateTimeMT(t.updated_at) : latest ? formatM
           {brands.map((b) => (
             <tr>
               <th scope="row">{knownBrands.has(b.brand_slug) ? <a href={`/brand/${b.brand_slug}/`}>{b.brand}</a> : b.brand}</th>
-              <td class="num">{formatShort(b.first_mention)}</td>
+              <td class="num">{b.pre_start ? preStartLabel(t.start) : formatShort(b.first_mention)}</td>
               <td class="num">{b.discount !== null ? `${b.discount}%` : 'None'}</td>
               <td class="num">{b.sends_since}</td>
               <td class="num">{b.avg_score.toFixed(1)}</td>
