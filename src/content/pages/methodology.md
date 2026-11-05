@@ -148,7 +148,11 @@ Held-back emails are not added to past boards later. Once a check passes review,
 
 ## Screenshots
 
-Each screenshot is captured at phone width (375px) from the copy of the email we received, with our own name and email address masked. An email built wider than a phone, up to 800px, is captured at its own full width so nothing is cut off, and its caption says so. An email wider than that gets no screenshot. Some images may not load if a brand's image server blocks automated viewing. A brand can ask for a screenshot to be removed by emailing {contactEmail}.
+Each screenshot is taken from the copy of the email we received, at phone width (375px). An email built wider than a phone is captured at its own width so nothing is cut off. Up to 800px it is shown at that width, and its caption says so. Wider than 800px, it is shrunk to phone width so the whole email still fits. A very long email is cut off at 6,000px.
+
+Personal details are covered rather than the screenshot being left out. Before the capture, our own name, email addresses and postal address, codes and numbers tied to one subscriber (such as offer, member, order or account numbers) and referral links are replaced in the email's text. Images drawn for one subscriber are replaced with a grey box labeled "Personal image hidden". After the capture, the image is read again with text recognition, and anything that still shows one of those details, along with any barcode or QR code, is covered with a solid box in the email's background color. Nothing is blurred.
+
+An email may have no screenshot when it could not be rendered, when a personal image or subscriber code or number was still showing after masking, or when we took the screenshot down, either after a request or because a personal detail was found in it after publishing. Some earlier boards are also missing screenshots for brands we hadn't yet reviewed for personal details. Some images may not load if a brand's image server blocks automated viewing. A brand can ask for a screenshot to be removed by emailing {contactEmail}.
 
 ## Corrections and removal
 
