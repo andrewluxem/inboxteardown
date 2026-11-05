@@ -4,7 +4,7 @@
 
 The public, free-tier site for [inboxteardown.com](https://inboxteardown.com): a daily email
 scoreboard, per-email scorecards, brand pages, a weekly teardown archive, a methodology page,
-and a Black Friday tracker that stays hidden until launch.
+and a Black Friday tracker.
 
 Static Astro site. No client framework. Every page reads fine with JavaScript off; JS only adds
 scoreboard filtering, the "signups open soon" message, and analytics.
@@ -63,7 +63,7 @@ The scoring pipeline writes files; the site reads them. Full spec with examples:
 - `src/content/scoreboard/YYYY-MM-DD.md`: one file per day, a list of scored emails with 8
   dimension scores (integers 1 to 5), notes, sources, and check results.
 - `src/content/teardowns/YYYY-MM-DD-slug.md`: weekly articles. `draft: true` hides them in production.
-- `src/content/tracker/bf-2026.md`: Black Friday tracker data (not yet written). `published: false` keeps it hidden.
+- `src/content/tracker/black-friday-2026.md`: Black Friday tracker data. Until it has `published: true` and at least one day, the tracker page shows its pre-start page.
 - `src/content/pages/methodology.md`: methodology prose.
 
 Totals, caps, bands, and rankings are derived in `src/lib/scoring.ts` and never stored.
@@ -83,10 +83,12 @@ Brand pages are derived by grouping scoreboard emails by `brand_slug`.
 
 The fictional fixture boards, teardowns and tracker were removed when the first real boards
 (2026-10-13 and 2026-10-14) were published with `scripts/publish_board.sh` from the scorer repo.
-With no teardown files the archive shows a "first teardown is on its way" note; with no tracker
-file `/tracker/black-friday-2026/` shows a noindex "Starts Nov 2" page that stays out of the nav
-and sitemap. The screenshots in `docs/screenshots/` show the real 2026-10-14 boards (commit
-f0ca8db), so they name real brands, not fixtures; regenerate them with `npm run screenshots`.
+The teardown archive at /teardown/ lists every post in src/content/teardowns/; the first is the
+week of 2026-10-25. The Black Friday tracker reads src/content/tracker/black-friday-2026.md and
+shows its pre-start page until that file has `published: true` and at least one day; from Nov 3,
+2026 it is published, in the nav and in the sitemap. The screenshots in docs/screenshots/ show the
+real 2026-10-14 boards (commit f0ca8db), so they name real brands, not fixtures; regenerate them
+with `npm run screenshots`.
 
 `tests/fixtures/malformed-scoreboard.md` is a test fixture, not site content. Keep it.
 
@@ -107,6 +109,5 @@ f0ca8db), so they name real brands, not fixtures; regenerate them with `npm run 
 Not covered by the check:
 
 - [ ] Enable Web Analytics for the project in the Vercel dashboard (the script 404s until it is enabled).
-- [ ] When the tracker should go live, set `published: true` in `src/content/tracker/bf-2026.md`.
 
 Find remaining placeholders with `grep -rn "TODO(andrew)" src`.
