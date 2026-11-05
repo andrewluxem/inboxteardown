@@ -1,7 +1,7 @@
 ---
 import { SIGNUP_ENDPOINT } from '../config/signup';
 
-export type SignupList = 'newsletter' | 'watchlist';
+export type SignupList = 'newsletter' | 'watchlist' | 'bfcm';
 
 interface Props {
   /** Hidden `list` value sent with the signup. */
@@ -18,11 +18,17 @@ const method = SIGNUP_ENDPOINT ? 'post' : 'get';
 const NOTES: Record<SignupList, string> = {
   newsletter: 'One email a week with the teardown, starting with the first issue. Unsubscribe anytime.',
   watchlist: 'One email when the Watchlist opens, and nothing before that. Unsubscribe anytime.',
+  bfcm: 'One email, the day the first tracked brand starts Black Friday. Unsubscribe anytime.',
 };
 const note = NOTES[list];
+// The page this form is on, fixed at build time. The endpoint stores it and
+// sends an invalid address back here (the Referer can't be relied on: the
+// site's Referrer-Policy sends only the origin cross-site).
+const source = Astro.url.pathname;
 ---
 <form class="signup" action={action} method={method} data-signup data-live={SIGNUP_ENDPOINT ? 'true' : 'false'}>
   <input type="hidden" name="list" value={list} />
+  <input type="hidden" name="source" value={source} />
   <!-- Honeypot: off-screen, out of the tab order and hidden from assistive tech. Bots fill it; the endpoint drops those. -->
   <div class="hp" aria-hidden="true">
     <label for={`${id}-website`}>Website</label>

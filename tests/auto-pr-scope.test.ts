@@ -49,6 +49,63 @@ describe('auto-pr-scope workflow', () => {
     expect(check('auto/x', ['src/content/scoreboard-old/a.md']).code).toBe(1);
     expect(check('auto/x', ['src/content/scoreboardx.md']).code).toBe(1);
   });
+  it('passes an auto/ PR that changes the Black Friday tracker file, alone or with boards', () => {
+    expect(check('auto/2026-11-03', ['src/content/tracker/black-friday-2026.md']).code).toBe(0);
+    expect(
+      check('auto/2026-11-03', ['src/content/scoreboard/2026-11-03.md', 'src/content/tracker/black-friday-2026.md']).code,
+    ).toBe(0);
+  });
+  it('fails any other tracker path', () => {
+    for (const f of [
+      'src/content/tracker/black-friday-2027.md',
+      'src/content/tracker/.gitkeep',
+      'src/content/tracker/black-friday-2026.md.bak',
+      'src/content/tracker/black-friday-2026xmd',
+      'src/content/tracker/sub/black-friday-2026.md',
+      'xsrc/content/tracker/black-friday-2026.md',
+    ]) {
+      const r = check('auto/2026-11-03', ['src/content/tracker/black-friday-2026.md', f]);
+      expect(r.code, f).toBe(1);
+      expect(r.out).toContain(`::error file=${f}::`);
+    }
+  });
+  it('fails any other src path next to the tracker file', () => {
+    for (const f of ['src/lib/tracker.ts', 'src/components/TrackerLive.astro', 'src/content/pages/privacy.md', 'src/content/teardowns/a.md']) {
+      expect(check('auto/x', ['src/content/tracker/black-friday-2026.md', f]).code, f).toBe(1);
+    }
+  });
+  it('fails a rename into the tracker file from elsewhere (its old path)', () => {
+    expect(check('auto/x', ['src/content/tracker/black-friday-2026.md', 'src/content/tracker/draft.md']).code).toBe(1);
+  });
+  it('passes an auto/teardown- PR that changes only one weekly teardown post', () => {
+    const r = check('auto/teardown-2026-11-01', ['src/content/teardowns/2026-11-01-week-of-2026-10-25.md']);
+    expect(r.code).toBe(0);
+    expect(r.out).toContain('all 1 changed files are weekly teardown posts');
+  });
+  it('fails an auto/teardown- PR that also changes a board, naming it', () => {
+    const r = check('auto/teardown-2026-11-01', [
+      'src/content/teardowns/2026-11-01-week-of-2026-10-25.md',
+      'src/content/scoreboard/2026-11-01.md',
+    ]);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain('::error file=src/content/scoreboard/2026-11-01.md::auto/teardown-2026-11-01 may change only src/content/teardowns/');
+    expect(r.out).not.toContain('file=src/content/teardowns/');
+  });
+  it('fails other teardown paths on an auto/teardown- PR', () => {
+    for (const f of [
+      'src/content/teardowns/a.md',
+      'src/content/teardowns/2026-11-01-week-of-2026-10-25.mdx',
+      'src/content/teardowns/2026-11-01-week-of-2026-10-25.md.bak',
+      'src/content/teardowns/sub/2026-11-01-week-of-2026-10-25.md',
+      'src/content/teardowns/2026-11-1-week-of-2026-10-25.md',
+      'src/content/tracker/black-friday-2026.md',
+    ]) {
+      expect(check('auto/teardown-2026-11-01', [f]).code, f).toBe(1);
+    }
+  });
+  it('fails a teardown post on any other auto/ PR', () => {
+    expect(check('auto/2026-11-02', ['src/content/teardowns/2026-11-01-week-of-2026-10-25.md']).code).toBe(1);
+  });
   it('fails when no files are listed', () => {
     expect(check('auto/x', []).code).toBe(1);
   });

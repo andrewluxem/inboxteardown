@@ -1,34 +1,21 @@
 // @ts-check
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
-import { parse } from 'yaml';
+import vercel from '@astrojs/vercel';
 import { SITE } from './src/config/site.ts';
+import { brandRedirects } from './src/integrations/brand-redirects.ts';
 
-/**
- * Tracker pages stay out of the sitemap until their content file says
- * `published: true`, and so does the "starts soon" page built while there is
- * no content file. Content collections are not available in config, so the
- * frontmatter is read directly.
- */
-function publishedTrackerPaths() {
-  const dir = new URL('./src/content/tracker/', import.meta.url);
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter((f) => f.endsWith('.md'))
-    .map((f) => parse(readFileSync(new URL(f, dir), 'utf8').split(/^---$/m)[1] ?? ''))
-    .filter((fm) => fm && fm.published === true)
-    .map((fm) => `/tracker/${fm.slug}/`);
-}
-
+// Tracker pages are always in the sitemap: published: false only keeps their
+// data off the page (it renders the pre-start state), never the page itself.
 const hidden = ['/signups-soon/', '/signed-up/'];
-const publishedTrackers = publishedTrackerPaths();
-const isHidden = (/** @type {string} */ path) =>
-  hidden.includes(path) || (path.startsWith('/tracker/') && !publishedTrackers.includes(path));
+const isHidden = (/** @type {string} */ path) => hidden.includes(path);
 
 export default defineConfig({
   site: SITE.siteUrl,
   output: 'static',
+  // The adapter only turns Astro redirects into real 308s on Vercel; every
+  // page is still prerendered and vercel.json still sets the headers.
+  adapter: vercel(),
   trailingSlash: 'always',
   vite: {
     // OG image tooling runs only at build time; let Node load it as-is
@@ -36,6 +23,8 @@ export default defineConfig({
     ssr: { external: ['satori', '@resvg/resvg-js'] },
   },
   integrations: [
+    // Old brand and email URLs: see src/lib/redirects.ts.
+    brandRedirects(),
     sitemap({
       filter: (page) => !isHidden(new URL(page).pathname),
     }),

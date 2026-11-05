@@ -1,0 +1,20 @@
+---
+// "2nd of 3": a brand's send order on its board. Renders nothing for a
+// brand's only send or a board exported without send order.
+import { sendOrdinal } from '../lib/sends';
+import type { Email } from '../lib/schemas';
+
+interface Props { email: Pick<Email, 'brand' | 'send_index' | 'send_count'> }
+const { email } = Astro.props;
+const label = sendOrdinal(email);
+---
+{label && (
+  <span class="send-ordinal" title={`${label} sends from ${email.brand} that day`}>{label}</span>
+)}
+<style>
+  .send-ordinal {
+    display: inline-block; padding: 0 6px; border: 1px solid var(--rule);
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; line-height: 1.5;
+    color: var(--ink-2); white-space: nowrap; vertical-align: 0.1em;
+  }
+</style>

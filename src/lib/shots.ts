@@ -12,6 +12,9 @@ export interface Size {
 }
 
 export const FALLBACK_SIZE: Size = { width: 375, height: 667 };
+/** The phone viewport the scorer captures at; a wider capture is an email
+ * built wider than a phone (up to 800px), shot at its own width. */
+export const PHONE_WIDTH = 375;
 const HEADER_BYTES = 64;
 const TIMEOUT_MS = 10_000;
 
@@ -55,6 +58,13 @@ async function headerBytes(ref: string): Promise<Uint8Array> {
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return new Uint8Array(await res.arrayBuffer()).subarray(0, HEADER_BYTES);
+}
+
+/** The scorecard caption for a screenshot of this size. */
+export function shotCaption(size: Size): string {
+  return size.width > PHONE_WIDTH
+    ? `As received, at the email's full width (${size.width}px), which is wider than a phone.`
+    : 'As received, at phone width.';
 }
 
 /** The screenshot's pixel size, or FALLBACK_SIZE when it can't be read. */

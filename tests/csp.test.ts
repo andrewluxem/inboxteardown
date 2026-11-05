@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { checkCspHashes, cspFromVercelJson, cspSources, inlineScriptHashes } from '../scripts/prelaunch-rules.ts';
 
@@ -6,6 +6,8 @@ const ALERT = "'sha256-bhHHL3z2vDgxUt0W3dWQOrprscmda2Y5pLsLg4GF+pI='"; // alert(
 const page = (path: string, html: string) => ({ path, html });
 const vercelJson = readFileSync(new URL('../vercel.json', import.meta.url), 'utf8');
 const csp = cspFromVercelJson(vercelJson) ?? '';
+/** The one Blob store img-src allows. A screenshot anywhere else would be blocked. */
+const SCREENSHOT_ORIGIN = 'https://fnlmdoepsgemyryt.public.blob.vercel-storage.com';
 
 describe('inline script hashes', () => {
   it('hashes inline scripts the browser runs, exactly as written', () => {
@@ -39,7 +41,7 @@ describe('CSP hash rule', () => {
 
 describe('vercel.json headers', () => {
   it('sets a CSP for every path with the required directives', () => {
-    expect(cspSources(csp, 'img-src')).toEqual(["'self'", 'data:', 'https://*.public.blob.vercel-storage.com']);
+    expect(cspSources(csp, 'img-src')).toEqual(["'self'", 'data:', SCREENSHOT_ORIGIN]);
     expect(cspSources(csp, 'form-action')).toEqual(["'self'", 'https://fpqyuzkrshokqxtjtffi.supabase.co']);
     expect(cspSources(csp, 'frame-ancestors')).toEqual(["'none'"]);
     expect(cspSources(csp, 'base-uri')).toEqual(["'self'"]);
@@ -60,5 +62,16 @@ describe('vercel.json headers', () => {
     const get = (k: string) => all?.headers.find((h) => h.key === k)?.value;
     expect(get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
     expect(get('X-Content-Type-Options')).toBe('nosniff');
+  });
+});
+
+describe('screenshots and img-src', () => {
+  it('every https screenshot on a board is on the store img-src allows', () => {
+    const dir = new URL('../src/content/scoreboard/', import.meta.url);
+    const urls = readdirSync(dir)
+      .filter((f) => f.endsWith('.md'))
+      .flatMap((f) => [...readFileSync(new URL(f, dir), 'utf8').matchAll(/^\s*screenshot:\s*['"]?(https:\/\/[^\s'"]+)/gm)].map((m) => m[1]!));
+    expect(urls.length).toBeGreaterThan(0);
+    expect(urls.filter((u) => new URL(u).origin !== SCREENSHOT_ORIGIN)).toEqual([]);
   });
 });

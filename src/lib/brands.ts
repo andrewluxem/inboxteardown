@@ -36,6 +36,19 @@ export function windowStart(end: string, windowDays = FREE_WINDOW_DAYS): string 
   return addDays(end, -(windowDays - 1));
 }
 
+/**
+ * Send days in the window that a scoreboard covers: a board dated D scores
+ * the sends of D - 1. Days before tracking began, and days whose board was
+ * never published (the Oct 18 outage), are not counted, so a rate over
+ * them is not diluted by days we never looked at.
+ */
+export function coveredSendDays(emails: FlatEmail[], end: string, windowDays = FREE_WINDOW_DAYS): string[] {
+  const start = windowStart(end, windowDays);
+  return [...new Set(emails.map((e) => addDays(e.boardDate, -1)))]
+    .filter((d) => d >= start && d <= end)
+    .sort();
+}
+
 export function inWindow(emails: FlatEmail[], end: string, windowDays = FREE_WINDOW_DAYS): FlatEmail[] {
   const start = windowStart(end, windowDays);
   return emails.filter((e) => e.sendDate >= start && e.sendDate <= end);
@@ -64,7 +77,10 @@ export interface BrandSummary {
   windowEnd: string;
   sends: Scored<FlatEmail>[];
   avgTotal: number;
+  /** Sends per 7 covered send days (see coveredSendDays). */
   sendsPerWeek: number;
+  /** How many send days in the window the rate is over. */
+  coveredDays: number;
   hardFails: number;
   strip: StripDay[];
   dimAvgs: DimAverages;
@@ -76,6 +92,16 @@ export interface BrandSummary {
 
 export function brandSlugs(emails: FlatEmail[]): string[] {
   return [...new Set(emails.map((e) => e.brand_slug))].sort();
+}
+
+/**
+ * Every brand that gets a brand page: one with a send in the free window.
+ * The brand pages and the redirect plan (src/lib/redirects.ts) both use it.
+ */
+export function brandPages(all: FlatEmail[], end: string): BrandSummary[] {
+  return brandSlugs(all)
+    .map((slug) => summarizeBrand(all, slug, end))
+    .filter((b): b is BrandSummary => b !== undefined);
 }
 
 function latestFirst(a: { email: FlatEmail }, b: { email: FlatEmail }): number {
@@ -108,6 +134,7 @@ export function summarizeBrand(
   const latest = sends[0]!.email;
   const industry = latest.industry;
   const start = windowStart(end, windowDays);
+  const coveredDays = Math.max(1, coveredSendDays(all, end, windowDays).length);
 
   const strip = dateRange(start, end).map((date) => ({
     date,
@@ -129,7 +156,8 @@ export function summarizeBrand(
     windowEnd: end,
     sends,
     avgTotal: average(sends.map((s) => s.total)),
-    sendsPerWeek: (sends.length / windowDays) * 7,
+    sendsPerWeek: (sends.length / coveredDays) * 7,
+    coveredDays,
     hardFails: sends.filter((s) => s.capped).length,
     strip,
     dimAvgs: dimAverages(mine),

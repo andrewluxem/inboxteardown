@@ -48,6 +48,9 @@ export const isoDate = z.preprocess(
 /** Full timestamps (ISO 8601 with offset). */
 export const isoDateTime = z.coerce.date();
 
+/** An ISO 8601 date-time string with a numeric offset, kept as written. */
+const ISO_OFFSET = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?[+-]\d{2}:\d{2}$/;
+
 export const industrySchema = z.enum(INDUSTRY_KEYS);
 export const kindSchema = z.enum(['campaign', 'welcome', 'transactional']);
 
@@ -84,6 +87,13 @@ const emailBase = z.strictObject({
   industry: industrySchema,
   kind: kindSchema,
   sent_at: isoDateTime,
+  // Order among the brand's sends on this board (1-based) and how many there
+  // were; set by the exporter once per board, so filters never change them.
+  // Absent on boards exported before Oct 28, 2026.
+  send_index: z.number().int().min(1).optional(),
+  send_count: z.number().int().min(1).optional(),
+  // The send time in Mountain Time with its offset, e.g. 2026-10-26T14:14:00-06:00.
+  sent_at_local: z.string().regex(ISO_OFFSET, 'sent_at_local must be ISO 8601 with an offset').optional(),
   subject: z.string().min(1),
   preheader: z.string().default(''),
   themes: z.array(z.string().min(1)).default([]),
@@ -114,6 +124,14 @@ const emailBase = z.strictObject({
  * failed check with a non-empty detail. A cap with no evidence fails the build.
  */
 export const emailSchema = emailBase.superRefine((e, ctx) => {
+  if ((e.send_index === undefined) !== (e.send_count === undefined)) {
+    ctx.addIssue({ code: 'custom', path: ['send_index'], message: 'send_index and send_count go together' });
+  } else if (e.send_index !== undefined && e.send_count !== undefined && e.send_index > e.send_count) {
+    ctx.addIssue({ code: 'custom', path: ['send_index'], message: `send_index ${e.send_index} is more than send_count ${e.send_count}` });
+  }
+  if (e.sent_at_local !== undefined && e.send_index === undefined) {
+    ctx.addIssue({ code: 'custom', path: ['sent_at_local'], message: 'sent_at_local only with send_index' });
+  }
   const capped = (['trust', 'technical_hygiene'] as const).filter((k) => e.dimensions[k].score === 1);
   if (!capped.length) return;
   const evidenced = e.checks.some((c) => c.result === 'fail' && (c.detail ?? '').trim().length > 0);
@@ -143,6 +161,27 @@ export const scoreboardSchema = z
       }
       seen.add(e.id);
     });
+    // A brand's emails all carry send order or none do; those that do are
+    // numbered 1..n, n being that brand's emails on this board.
+    const byBrand = new Map<string, number[]>();
+    day.emails.forEach((e, i) => byBrand.set(e.brand_slug, [...(byBrand.get(e.brand_slug) ?? []), i]));
+    for (const [slug, idx] of byBrand) {
+      const have = idx.filter((i) => day.emails[i]!.send_index !== undefined);
+      if (!have.length) continue;
+      if (have.length !== idx.length) {
+        ctx.addIssue({ code: 'custom', path: ['emails', idx[0]!, 'send_index'], message: `brand ${slug}: send_index on ${have.length} of its ${idx.length} emails; all or none` });
+        continue;
+      }
+      for (const i of idx) {
+        if (day.emails[i]!.send_count !== idx.length) {
+          ctx.addIssue({ code: 'custom', path: ['emails', i, 'send_count'], message: `brand ${slug} has ${idx.length} email(s) on this board` });
+        }
+      }
+      const got = idx.map((i) => day.emails[i]!.send_index!).sort((a, b) => a - b);
+      if (got.some((n, k) => n !== k + 1)) {
+        ctx.addIssue({ code: 'custom', path: ['emails', idx[0]!, 'send_index'], message: `brand ${slug}: send_index must be 1..${idx.length}, once each` });
+      }
+    }
   });
 
 export const teardownSchema = z.strictObject({
@@ -156,6 +195,12 @@ export const teardownSchema = z.strictObject({
 });
 
 const pct = z.number();
+
+/**
+ * The first send date whose scorer records carry the Black Friday match
+ * (bfcm.py). No first_mention can be earlier: nothing before it is recorded.
+ */
+export const MENTIONS_RECORDED_SINCE = '2026-10-19';
 
 export const trackerSchema = z
   .strictObject({
@@ -185,6 +230,8 @@ export const trackerSchema = z
         discount: z.number().min(0).max(100).nullable(), // headline % off, null if none
         sends_since: z.number().int().min(0),
         avg_score: z.number().min(8).max(40),
+        // Addition: true when first_mention is before start (shown as "Before <start>").
+        pre_start: z.literal(true).optional(),
       }),
     ),
     categories: z.array(
@@ -203,6 +250,45 @@ export const trackerSchema = z
         ctx.addIssue({ code: 'custom', path: ['days', i, 'launched_cumulative'], message: 'exceeds cohort_size' });
       }
     });
+    // In date order, launched_cumulative never goes down (and no date repeats).
+    const byDate = t.days.map((d, i) => ({ d, i })).sort((a, b) => a.d.date.localeCompare(b.d.date));
+    byDate.forEach(({ d, i }, k) => {
+      const prev = byDate[k - 1]?.d;
+      if (!prev) return;
+      if (prev.date === d.date) {
+        ctx.addIssue({ code: 'custom', path: ['days', i, 'date'], message: `${d.date} appears more than once` });
+      } else if (d.launched_cumulative < prev.launched_cumulative) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['days', i, 'launched_cumulative'],
+          message: `${d.launched_cumulative} on ${d.date} is less than ${prev.launched_cumulative} on ${prev.date}; it never decreases`,
+        });
+      }
+    });
+    // The latest day's launched count is the number of brands listed.
+    const launched = byDate.at(-1)?.d.launched_cumulative ?? 0;
+    if (launched !== t.brands.length) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['brands'],
+        message: `${t.brands.length} brands listed but the latest launched_cumulative is ${launched}; they must match`,
+      });
+    }
+    t.brands.forEach((b, i) => {
+      if (b.first_mention < MENTIONS_RECORDED_SINCE) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['brands', i, 'first_mention'],
+          message: `${b.first_mention} is before ${MENTIONS_RECORDED_SINCE}, when Black Friday mentions began to be recorded`,
+        });
+      }
+      if (b.first_mention < t.start && !b.pre_start) {
+        ctx.addIssue({ code: 'custom', path: ['brands', i, 'pre_start'], message: `${b.first_mention} is before start ${t.start} but pre_start is not true` });
+      }
+      if (b.pre_start && b.first_mention >= t.start) {
+        ctx.addIssue({ code: 'custom', path: ['brands', i, 'pre_start'], message: `pre_start is true but ${b.first_mention} is on or after start ${t.start}` });
+      }
+    });
   });
 
 export const pageSchema = z.strictObject({
@@ -212,9 +298,57 @@ export const pageSchema = z.strictObject({
   rubric_date: z.string().optional(),
 });
 
+/**
+ * src/data/brand-redirects.json, copied from the scorer
+ * (audit/proposals/brand-redirects.json). Old email and brand page paths to
+ * their registry paths. Which entries go live is decided at build time by
+ * src/lib/redirects.ts, never by this file alone.
+ */
+const PAGE_PATH = /^\/(email|brand)\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/;
+export const brandRedirectSchema = z.strictObject({
+  source: z.string().regex(PAGE_PATH, 'source must be /email/<id>/ or /brand/<slug>/'),
+  destination: z.string().regex(PAGE_PATH, 'destination must be /email/<id>/ or /brand/<slug>/'),
+  permanent: z.literal(true),
+});
+
+export const brandRedirectsSchema = z
+  .strictObject({
+    _note: z.string().min(1),
+    email_pages: z.number().int().min(0),
+    brand_pages: z.number().int().min(0),
+    suppressed_sends_left_out: z.number().int().min(0),
+    not_in_registry: z.array(z.string()),
+    redirects: z.array(brandRedirectSchema),
+  })
+  .superRefine((m, ctx) => {
+    const kind = (path: string) => path.split('/')[1];
+    const sources = new Set(m.redirects.map((r) => r.source));
+    const seen = new Set<string>();
+    m.redirects.forEach((r, i) => {
+      const at = (key: string) => ['redirects', i, key];
+      if (seen.has(r.source)) ctx.addIssue({ code: 'custom', path: at('source'), message: `Duplicate source ${r.source}` });
+      seen.add(r.source);
+      if (r.source === r.destination) ctx.addIssue({ code: 'custom', path: at('destination'), message: `${r.source} redirects to itself` });
+      if (kind(r.source) !== kind(r.destination)) {
+        ctx.addIssue({ code: 'custom', path: at('destination'), message: `${r.source} and ${r.destination} are different page types` });
+      }
+      if (sources.has(r.destination)) {
+        ctx.addIssue({ code: 'custom', path: at('destination'), message: `${r.destination} is itself a redirect source (a chain)` });
+      }
+    });
+    const count = (k: string) => m.redirects.filter((r) => kind(r.source) === k).length;
+    if (count('email') !== m.email_pages) {
+      ctx.addIssue({ code: 'custom', path: ['email_pages'], message: `email_pages is ${m.email_pages} but ${count('email')} email redirects are listed` });
+    }
+    if (count('brand') !== m.brand_pages) {
+      ctx.addIssue({ code: 'custom', path: ['brand_pages'], message: `brand_pages is ${m.brand_pages} but ${count('brand')} brand redirects are listed` });
+    }
+  });
+
 export type Email = z.infer<typeof emailSchema>;
 export type ScoreboardDay = z.infer<typeof scoreboardSchema>;
 export type Teardown = z.infer<typeof teardownSchema>;
 export type Tracker = z.infer<typeof trackerSchema>;
 export type Dimensions = z.infer<typeof dimensionsSchema>;
+export type BrandRedirects = z.infer<typeof brandRedirectsSchema>;
 export type CheckResult = z.infer<typeof checkSchema>['result'];
