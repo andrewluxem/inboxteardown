@@ -1,8 +1,13 @@
-# Pull requests from the nightly publisher (head branch auto/*) may change
-# only src/content/scoreboard/ and the one tracker file
-# src/content/tracker/black-friday-2026.md. Any other changed path (including
-# the old path of a rename) fails this check; every other PR passes. Runs no PR code:
-# the file list comes from the GitHub API.
+# Pull requests from the bots (head branch auto/*) may change only their own
+# content; the rule depends on the head branch, checked in this order:
+#   auto/teardown-*  the weekly teardown: only
+#                    src/content/teardowns/YYYY-MM-DD-week-of-YYYY-MM-DD.md
+#                    (checked first: these branches are auto/* too)
+#   other auto/*     the nightly publisher: src/content/scoreboard/ and the
+#                    one tracker file src/content/tracker/black-friday-2026.md
+# Any other changed path (including the old path of a rename) fails this
+# check; every other PR passes. Runs no PR code: the file list comes from the
+# GitHub API.
 name: auto-pr-scope
 
 on:
@@ -16,7 +21,7 @@ jobs:
   auto-pr-scope:
     runs-on: ubuntu-latest
     steps:
-      - name: auto/ PRs change only boards and the Black Friday tracker file
+      - name: auto/ PRs change only their own content
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_REF: ${{ github.head_ref }}
@@ -24,8 +29,16 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
+          # auto/teardown-* must come before auto/*
           case "$HEAD_REF" in
-            auto/*) ;;
+            auto/teardown-*)
+              allowed='^src/content/teardowns/[0-9]{4}-[0-9]{2}-[0-9]{2}-week-of-[0-9]{4}-[0-9]{2}-[0-9]{2}\.md$'
+              what='src/content/teardowns/YYYY-MM-DD-week-of-YYYY-MM-DD.md'
+              ok='are weekly teardown posts' ;;
+            auto/*)
+              allowed='^(src/content/scoreboard/.+|src/content/tracker/black-friday-2026\.md)$'
+              what='src/content/scoreboard/ and src/content/tracker/black-friday-2026.md'
+              ok='are boards or the Black Friday tracker file' ;;
             *) echo "head branch $HEAD_REF is not auto/*: nothing to check"; exit 0 ;;
           esac
           files=$(gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/files" \
@@ -34,12 +47,11 @@ jobs:
             echo "::error::no changed files listed for PR #$PR_NUMBER"
             exit 1
           fi
-          allowed='^(src/content/scoreboard/.+|src/content/tracker/black-friday-2026\.md)$'
           outside=$(printf '%s\n' "$files" | sort -u | grep -Ev "$allowed" || true)
           if [ -n "$outside" ]; then
             printf '%s\n' "$outside" | while IFS= read -r f; do
-              echo "::error file=$f::auto/ PRs may change only src/content/scoreboard/ and src/content/tracker/black-friday-2026.md"
+              echo "::error file=$f::$HEAD_REF may change only $what"
             done
             exit 1
           fi
-          echo "all $(printf '%s\n' "$files" | sort -u | wc -l) changed files are boards or the Black Friday tracker file"
+          echo "all $(printf '%s\n' "$files" | sort -u | wc -l) changed files $ok"
