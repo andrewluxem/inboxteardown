@@ -196,6 +196,12 @@ export const teardownSchema = z.strictObject({
 
 const pct = z.number();
 
+/**
+ * The first send date whose scorer records carry the Black Friday match
+ * (bfcm.py). No first_mention can be earlier: nothing before it is recorded.
+ */
+export const MENTIONS_RECORDED_SINCE = '2026-10-19';
+
 export const trackerSchema = z
   .strictObject({
     slug: z.string().regex(SLUG),
@@ -224,6 +230,8 @@ export const trackerSchema = z
         discount: z.number().min(0).max(100).nullable(), // headline % off, null if none
         sends_since: z.number().int().min(0),
         avg_score: z.number().min(8).max(40),
+        // Addition: true when first_mention is before start (shown as "Before <start>").
+        pre_start: z.literal(true).optional(),
       }),
     ),
     categories: z.array(
@@ -267,8 +275,18 @@ export const trackerSchema = z
       });
     }
     t.brands.forEach((b, i) => {
-      if (b.first_mention < t.start) {
-        ctx.addIssue({ code: 'custom', path: ['brands', i, 'first_mention'], message: `${b.first_mention} is before start ${t.start}` });
+      if (b.first_mention < MENTIONS_RECORDED_SINCE) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['brands', i, 'first_mention'],
+          message: `${b.first_mention} is before ${MENTIONS_RECORDED_SINCE}, when Black Friday mentions began to be recorded`,
+        });
+      }
+      if (b.first_mention < t.start && !b.pre_start) {
+        ctx.addIssue({ code: 'custom', path: ['brands', i, 'pre_start'], message: `${b.first_mention} is before start ${t.start} but pre_start is not true` });
+      }
+      if (b.pre_start && b.first_mention >= t.start) {
+        ctx.addIssue({ code: 'custom', path: ['brands', i, 'pre_start'], message: `pre_start is true but ${b.first_mention} is on or after start ${t.start}` });
       }
     });
   });

@@ -81,7 +81,9 @@ describe('build with the fixture in place', () => {
 
   it('renders the pre-start state and none of the unpublished data', () => {
     const html = read('tracker/black-friday-2026/index.html');
-    expect(html).toContain('Starts <span');
+    expect(html).toContain('First update <span');
+    expect(html).toContain('Tracking starts Nov 2. From Nov 3, this page shows');
+    expect(html).not.toContain('Before Nov 2');
     expect(html).toContain('name="list" value="bfcm"');
     for (const leak of ['Day 3', 'Day 0', '3 of 4', 'First mentions']) expect(html, leak).not.toContain(leak);
     expect(read('index.html')).not.toContain('Day 3 of 29');
