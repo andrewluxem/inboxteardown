@@ -22,6 +22,9 @@ emails:                             # at least one
     industry: ecommerce                # see industries below
     kind: campaign                     # campaign | welcome | transactional
     sent_at: 2026-10-07T00:42:00Z      # ISO 8601; the brand page buckets by MT calendar date
+    send_index: 2                      # optional; this send's place among the brand's sends on this board
+    send_count: 3                      # optional; how many sends the brand has on this board
+    sent_at_local: "2026-10-06T18:42:00-06:00"  # optional; the send time in MT, quoted, with its offset
     subject: "LAST CHANCE!!! Ends tonight"
     preheader: "View this email in your browser"   # optional, defaults to ""
     themes: [last chance, "% off", countdown]      # optional, defaults to []
@@ -66,6 +69,15 @@ Rules:
   `*`, `!`, or contains `: `.
 - `correction` is optional. When present, the scorecard shows "Corrected {date}: {note}" in the
   verdict block. Update the dimension scores themselves to the corrected values.
+- `send_index`, `send_count` and `sent_at_local` are optional and set by the
+  scorer's export, once per board: the brand's sends on that board (by
+  `brand_slug`, withheld sends not counted) ordered by send time, 1-based.
+  `send_index` and `send_count` go together; `sent_at_local` only with them.
+  A brand's emails on a board all carry them or none do, numbered 1..n with
+  `send_count` n. When `send_count` is 2 or more the board row, the best and
+  lowest cards and the scorecard show "2nd of 3"; filters on the board never
+  change it. Boards exported before Oct 28, 2026 have none and show no order.
+  This is not the `-N` in the id, which is not always in send order.
 - Unknown keys anywhere in an email fail the build.
 
 ### Hard-fail evidence gate (standing rule)
@@ -159,7 +171,8 @@ The tracker page is built from this file alone. It is served at
 The page is always public: indexable, in the sitemap and the nav, and linked
 from the home page. `published` only decides whether the data shows. Until
 the file says `published: true` and has at least one day (or while there is
-no file), the page is the pre-start page: "Starts Nov 2", what counts as
+no file), the page is the pre-start page: "First update Nov 3" (the day
+after `start`, when the first daily update appears), what counts as
 started, the brands on the scoreboard now, and the signup form, with no
 banner. The page, its OG image and the home card never show "Day 0" or
 unpublished numbers.
@@ -180,6 +193,8 @@ days:                         # each date must fall within start..end
 brands:
   - { brand: Kestrel Outdoor, brand_slug: kestrel-outdoor, first_mention: 2026-11-02, discount: 30, sends_since: 14, avg_score: 27.4 }
     # discount: headline % off as a number 0 to 100, or null when there is none
+  - { brand: Juniper Home, brand_slug: juniper-home, first_mention: 2026-10-24, discount: null, sends_since: 9, avg_score: 25.1, pre_start: true }
+    # pre_start (addition, optional): true when first_mention is before start
 categories:
   - { industry: ecommerce, sends_vs_baseline: 72 }
 ---
@@ -191,12 +206,20 @@ Rules (the schema enforces them; the brand check runs at build):
 - In date order, `launched_cumulative` never decreases.
 - The latest day's `launched_cumulative` equals the number of `brands`
   (zero brands when `days` is empty).
-- Every `brands[].first_mention` is on or after `start`.
+- Every `brands[].first_mention` is on or after 2026-10-19
+  (`MENTIONS_RECORDED_SINCE` in `src/lib/schemas.ts`: the first send date
+  whose scorer records carry the Black Friday match).
+- `brands[].pre_start` is `true` exactly when `first_mention` is before
+  `start`, and absent otherwise. Such a brand counts as launched from the
+  first day. The page shows its first mention as "Before Nov 2" (the start
+  date), never the date, because mentions before 2026-10-19 are not
+  recorded; pre-start rows sort first, by name.
 - Every `brands[].brand_slug` exists in a scoreboard file.
 
-`updated_at` and `october_avg_score` were added beyond the original spec,
-because the page needs an update time and an October baseline and must be
-built from this file alone. Both are optional.
+`updated_at`, `october_avg_score` and `brands[].pre_start` were added beyond
+the original spec, because the page needs an update time, an October
+baseline and a way to mark mentions before `start`, and must be built from
+this file alone. All three are optional; files without them still validate.
 
 ## Pages: `src/content/pages/*.md`
 

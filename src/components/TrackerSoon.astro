@@ -8,7 +8,7 @@ import SignupForm from './SignupForm.astro';
 import { CURRENT_TRACKER, getTrackedBrands } from '../lib/content';
 import { formatShort } from '../lib/dates';
 import { ogPath } from '../lib/og';
-import { startedDefinition } from '../lib/tracker';
+import { firstUpdate, startedDefinition } from '../lib/tracker';
 import type { Tracker } from '../lib/schemas';
 
 interface Props {
@@ -20,15 +20,16 @@ const { start, tracker } = Astro.props;
 const year = start.slice(0, 4);
 const title = tracker?.title ?? `Black Friday ${year} tracker`;
 const brands = await getTrackedBrands();
+const first = formatShort(firstUpdate(start));
 ---
 <Base title={title} description={`Which brands have started Black Friday ${year} email. Tracking starts ${formatShort(start)}.`} ogImage={ogPath.tracker(tracker?.slug ?? CURRENT_TRACKER)}>
   <p class="eyebrow num">{title}</p>
-  <h1 class="display soon-h1">Starts <span class="accent">{formatShort(start)}</span></h1>
-  <p class="lede soon-lede">From {formatShort(start)}, this page tracks which brands in our inbox have started Black Friday email, updated daily.</p>
+  <h1 class="display soon-h1">First update <span class="accent">{first}</span></h1>
+  <p class="lede soon-lede">Tracking starts {formatShort(start)}. From {first}, this page shows which brands in our inbox have started Black Friday email, updated daily.</p>
 
   <section class="section" aria-labelledby="soon-started">
     <h2 id="soon-started" class="display soon-h2">What counts as started</h2>
-    <p class="soon-def">{startedDefinition(start)}</p>
+    <p class="soon-def">{startedDefinition()}</p>
   </section>
 
   <section class="section" aria-labelledby="soon-brands">
@@ -42,7 +43,7 @@ const brands = await getTrackedBrands();
   <section class="section card dark soon-cta" aria-labelledby="soon-notify">
     <p class="eyebrow">Get notified</p>
     <h2 id="soon-notify" class="display soon-h2">Email me the day the first brand starts</h2>
-    <p class="soon-cta-sub">This page updates daily from {formatShort(start)}.</p>
+    <p class="soon-cta-sub">This page updates daily from {first}.</p>
     <SignupForm list="bfcm" button="Email me the day the first brand starts" />
   </section>
 </Base>

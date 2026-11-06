@@ -3,11 +3,11 @@ import { CURRENT_TRACKER, CURRENT_TRACKER_START, getTrackers } from '../../../li
 import { formatShort } from '../../../lib/dates';
 import { pngResponse, renderOgPng } from '../../../lib/og';
 import type { Tracker } from '../../../lib/schemas';
-import { dayLabel, showsData, trackerProgress } from '../../../lib/tracker';
+import { dayLabel, firstUpdate, showsData, trackerProgress } from '../../../lib/tracker';
 
 // One image per tracker page, including the pre-start page built while the
 // current tracker has no content file. Until data may be shown (published
-// with a day of data) it says "Starts Nov 2".
+// with a day of data) it says "First update Nov 3" (the day after start).
 export const getStaticPaths = (async () => {
   const trackers = await getTrackers();
   const paths: { params: { slug: string }; props: { tracker?: Tracker } }[] =
@@ -26,7 +26,7 @@ export async function GET({ props }: APIContext<{ tracker?: Tracker }>) {
     return pngResponse(
       await renderOgPng({
         eyebrow: title,
-        headline: [{ text: 'Starts ' }, { text: formatShort(start), accent: true }],
+        headline: [{ text: 'First update ' }, { text: formatShort(firstUpdate(start)), accent: true }],
       }),
     );
   }

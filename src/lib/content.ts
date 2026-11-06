@@ -66,7 +66,7 @@ export async function getTeardowns(): Promise<TeardownEntry[]> {
 export const CURRENT_TRACKER = 'black-friday-2026';
 /**
  * First day of the current tracker, and the single source for it: the page
- * shows a "Starts" state before this date or until a content file exists, and
+ * shows a "First update" state before this date or until a content file exists, and
  * the current tracker's content file must use the same `start`.
  */
 export const CURRENT_TRACKER_START = '2026-11-02';
