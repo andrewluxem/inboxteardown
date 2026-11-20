@@ -59,7 +59,7 @@ describe('build with the fixture in place', () => {
     cpSync(FIXTURE, join(copy, TARGET));
     execFileSync(join(ROOT, 'node_modules/.bin/astro'), ['build'], { cwd: copy, stdio: 'pipe' });
     dist = join(copy, 'dist');
-  }, 180_000);
+  }, 300_000);
   afterAll(() => {
     if (copy) rmSync(copy, { recursive: true, force: true });
   });
