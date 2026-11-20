@@ -6,7 +6,7 @@ end: 2026-11-30
 cohort_frozen: 2026-11-01
 published: true
 cohort_size: 46
-updated_at: 2026-11-20T08:04:17Z
+updated_at: 2026-11-20T17:03:19Z
 october_avg_score: 25.9
 days:
   - { date: 2026-11-02, launched_cumulative: 6, sends: 39, sends_vs_baseline: 9 }
