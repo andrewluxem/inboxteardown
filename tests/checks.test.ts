@@ -17,11 +17,12 @@ function contentCheckNames(): string[] {
 }
 
 describe('check names', () => {
+  // Parses every scoreboard board, so it slows down as boards accumulate.
   it('uses only the public check names in the content', () => {
     const names = contentCheckNames();
     expect(names.length).toBeGreaterThan(0);
     expect(names.filter((n) => !isPublicCheckName(n))).toEqual([]);
-  });
+  }, 30_000);
 
   it('rejects scorer ids and failure-style labels', () => {
     expect(isPublicCheckName('DMARC alignment')).toBe(true);
