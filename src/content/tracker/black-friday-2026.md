@@ -6,7 +6,7 @@ end: 2026-11-30
 cohort_frozen: 2026-11-01
 published: true
 cohort_size: 46
-updated_at: 2026-11-25T08:28:07Z
+updated_at: 2026-11-26T08:23:01Z
 october_avg_score: 25.9
 days:
   - { date: 2026-11-02, launched_cumulative: 6, sends: 39, sends_vs_baseline: 9 }
@@ -32,46 +32,48 @@ days:
   - { date: 2026-11-22, launched_cumulative: 36, sends: 63, sends_vs_baseline: 75 }
   - { date: 2026-11-23, launched_cumulative: 36, sends: 67, sends_vs_baseline: 87 }
   - { date: 2026-11-24, launched_cumulative: 37, sends: 64, sends_vs_baseline: 78 }
+  - { date: 2026-11-25, launched_cumulative: 38, sends: 73, sends_vs_baseline: 103 }
 brands:
-  - { brand: "QVC", brand_slug: qvc, first_mention: 2026-10-22, discount: null, sends_since: 64, avg_score: 24.0, pre_start: true }
-  - { brand: "L.L.Bean", brand_slug: l-l-bean, first_mention: 2026-10-26, discount: 40, sends_since: 29, avg_score: 25.1, pre_start: true }
-  - { brand: "True Classic", brand_slug: true-classic, first_mention: 2026-10-31, discount: 50, sends_since: 38, avg_score: 26.9, pre_start: true }
-  - { brand: "Walmart", brand_slug: walmart, first_mention: 2026-11-01, discount: null, sends_since: 39, avg_score: 27.4, pre_start: true }
+  - { brand: "QVC", brand_slug: qvc, first_mention: 2026-10-22, discount: null, sends_since: 66, avg_score: 24.0, pre_start: true }
+  - { brand: "L.L.Bean", brand_slug: l-l-bean, first_mention: 2026-10-26, discount: 40, sends_since: 30, avg_score: 25.2, pre_start: true }
+  - { brand: "True Classic", brand_slug: true-classic, first_mention: 2026-10-31, discount: 50, sends_since: 40, avg_score: 26.8, pre_start: true }
+  - { brand: "Walmart", brand_slug: walmart, first_mention: 2026-11-01, discount: null, sends_since: 42, avg_score: 27.4, pre_start: true }
   - { brand: "Wayfair", brand_slug: wayfair, first_mention: 2026-11-01, discount: 70, sends_since: 6, avg_score: 24.0, pre_start: true }
-  - { brand: "CB2", brand_slug: cb2, first_mention: 2026-11-02, discount: null, sends_since: 45, avg_score: 25.1 }
-  - { brand: "Purple", brand_slug: purple, first_mention: 2026-11-03, discount: null, sends_since: 15, avg_score: 27.9 }
-  - { brand: "Everlane", brand_slug: everlane, first_mention: 2026-11-04, discount: null, sends_since: 50, avg_score: 28.3 }
-  - { brand: "Our Place", brand_slug: our-place, first_mention: 2026-11-04, discount: null, sends_since: 33, avg_score: 23.5 }
-  - { brand: "Lands' End", brand_slug: lands-end, first_mention: 2026-11-05, discount: 50, sends_since: 43, avg_score: 26.4 }
+  - { brand: "CB2", brand_slug: cb2, first_mention: 2026-11-02, discount: null, sends_since: 48, avg_score: 25.1 }
+  - { brand: "Purple", brand_slug: purple, first_mention: 2026-11-03, discount: null, sends_since: 16, avg_score: 27.8 }
+  - { brand: "Everlane", brand_slug: everlane, first_mention: 2026-11-04, discount: null, sends_since: 53, avg_score: 28.3 }
+  - { brand: "Our Place", brand_slug: our-place, first_mention: 2026-11-04, discount: null, sends_since: 34, avg_score: 23.5 }
+  - { brand: "Lands' End", brand_slug: lands-end, first_mention: 2026-11-05, discount: 50, sends_since: 46, avg_score: 26.4 }
   - { brand: "Saatva", brand_slug: saatva, first_mention: 2026-11-05, discount: null, sends_since: 11, avg_score: 26.2 }
-  - { brand: "Target", brand_slug: target, first_mention: 2026-11-05, discount: null, sends_since: 36, avg_score: 27.6 }
-  - { brand: "Bed Bath & Beyond", brand_slug: bed-bath-beyond, first_mention: 2026-11-06, discount: 70, sends_since: 37, avg_score: 27.2 }
-  - { brand: "Crate & Barrel", brand_slug: crate-barrel, first_mention: 2026-11-06, discount: 60, sends_since: 73, avg_score: 22.8 }
-  - { brand: "Kohl’s", brand_slug: kohls, first_mention: 2026-11-06, discount: 50, sends_since: 17, avg_score: 28.7 }
+  - { brand: "Target", brand_slug: target, first_mention: 2026-11-05, discount: null, sends_since: 39, avg_score: 27.7 }
+  - { brand: "Bed Bath & Beyond", brand_slug: bed-bath-beyond, first_mention: 2026-11-06, discount: 70, sends_since: 40, avg_score: 27.2 }
+  - { brand: "Crate & Barrel", brand_slug: crate-barrel, first_mention: 2026-11-06, discount: 60, sends_since: 77, avg_score: 22.9 }
+  - { brand: "Kohl’s", brand_slug: kohls, first_mention: 2026-11-06, discount: 50, sends_since: 19, avg_score: 28.8 }
   - { brand: "Best Buy", brand_slug: best-buy, first_mention: 2026-11-07, discount: null, sends_since: 3, avg_score: 24.3 }
-  - { brand: "KAY", brand_slug: kay, first_mention: 2026-11-09, discount: 40, sends_since: 26, avg_score: 25.6 }
-  - { brand: "Mack Weldon", brand_slug: mack-weldon, first_mention: 2026-11-09, discount: null, sends_since: 8, avg_score: 24.4 }
-  - { brand: "JARED Jewelers", brand_slug: jared-jewelers, first_mention: 2026-11-11, discount: 20, sends_since: 17, avg_score: 27.6 }
-  - { brand: "The North Face", brand_slug: the-north-face, first_mention: 2026-11-13, discount: null, sends_since: 11, avg_score: 25.1 }
-  - { brand: "Williams Sonoma", brand_slug: williams-sonoma, first_mention: 2026-11-13, discount: null, sends_since: 36, avg_score: 25.2 }
-  - { brand: "lululemon", brand_slug: lululemon, first_mention: 2026-11-15, discount: null, sends_since: 8, avg_score: 30.0 }
-  - { brand: "Parachute", brand_slug: parachute, first_mention: 2026-11-15, discount: 20, sends_since: 16, avg_score: 24.1 }
-  - { brand: "Bath & Body Works", brand_slug: bath-body-works, first_mention: 2026-11-17, discount: null, sends_since: 16, avg_score: 27.8 }
-  - { brand: "Brooklinen", brand_slug: brooklinen, first_mention: 2026-11-17, discount: 25, sends_since: 16, avg_score: 26.6 }
-  - { brand: "Sephora", brand_slug: sephora-savings-event, first_mention: 2026-11-17, discount: null, sends_since: 7, avg_score: 26.7 }
-  - { brand: "ZALES", brand_slug: zales, first_mention: 2026-11-17, discount: 40, sends_since: 12, avg_score: 26.0 }
-  - { brand: "Aerie", brand_slug: aerie, first_mention: 2026-11-19, discount: 40, sends_since: 6, avg_score: 22.8 }
-  - { brand: "American Eagle", brand_slug: american-eagle, first_mention: 2026-11-19, discount: 40, sends_since: 6, avg_score: 23.8 }
-  - { brand: "Blue Nile", brand_slug: blue-nile, first_mention: 2026-11-19, discount: 40, sends_since: 9, avg_score: 27.8 }
-  - { brand: "Levi's", brand_slug: levis, first_mention: 2026-11-19, discount: 40, sends_since: 10, avg_score: 26.6 }
-  - { brand: "Quince", brand_slug: quince, first_mention: 2026-11-19, discount: null, sends_since: 11, avg_score: 25.4 }
-  - { brand: "DICK'S Sporting Goods", brand_slug: dicks-sporting-goods, first_mention: 2026-11-20, discount: 50, sends_since: 16, avg_score: 24.5 }
-  - { brand: "Kiehl's Since 1851", brand_slug: kiehls-since-1851, first_mention: 2026-11-20, discount: 30, sends_since: 9, avg_score: 27.4 }
-  - { brand: "Bombas", brand_slug: bombas, first_mention: 2026-11-21, discount: 25, sends_since: 8, avg_score: 28.4 }
-  - { brand: "J.Crew", brand_slug: j-crew, first_mention: 2026-11-22, discount: 50, sends_since: 5, avg_score: 27.2 }
-  - { brand: "Banana Republic", brand_slug: banana-republic, first_mention: 2026-11-24, discount: 40, sends_since: 3, avg_score: 26.3 }
+  - { brand: "KAY", brand_slug: kay, first_mention: 2026-11-09, discount: 40, sends_since: 28, avg_score: 25.6 }
+  - { brand: "Mack Weldon", brand_slug: mack-weldon, first_mention: 2026-11-09, discount: null, sends_since: 9, avg_score: 24.3 }
+  - { brand: "JARED Jewelers", brand_slug: jared-jewelers, first_mention: 2026-11-11, discount: 20, sends_since: 18, avg_score: 27.6 }
+  - { brand: "The North Face", brand_slug: the-north-face, first_mention: 2026-11-13, discount: null, sends_since: 12, avg_score: 25.0 }
+  - { brand: "Williams Sonoma", brand_slug: williams-sonoma, first_mention: 2026-11-13, discount: null, sends_since: 39, avg_score: 25.2 }
+  - { brand: "lululemon", brand_slug: lululemon, first_mention: 2026-11-15, discount: null, sends_since: 9, avg_score: 30.0 }
+  - { brand: "Parachute", brand_slug: parachute, first_mention: 2026-11-15, discount: 20, sends_since: 17, avg_score: 24.1 }
+  - { brand: "Bath & Body Works", brand_slug: bath-body-works, first_mention: 2026-11-17, discount: null, sends_since: 18, avg_score: 27.8 }
+  - { brand: "Brooklinen", brand_slug: brooklinen, first_mention: 2026-11-17, discount: 25, sends_since: 18, avg_score: 26.5 }
+  - { brand: "Sephora", brand_slug: sephora-savings-event, first_mention: 2026-11-17, discount: null, sends_since: 8, avg_score: 26.6 }
+  - { brand: "ZALES", brand_slug: zales, first_mention: 2026-11-17, discount: 40, sends_since: 13, avg_score: 26.1 }
+  - { brand: "Aerie", brand_slug: aerie, first_mention: 2026-11-19, discount: 40, sends_since: 7, avg_score: 22.7 }
+  - { brand: "American Eagle", brand_slug: american-eagle, first_mention: 2026-11-19, discount: 40, sends_since: 7, avg_score: 24.0 }
+  - { brand: "Blue Nile", brand_slug: blue-nile, first_mention: 2026-11-19, discount: 40, sends_since: 11, avg_score: 27.6 }
+  - { brand: "Levi's", brand_slug: levis, first_mention: 2026-11-19, discount: 40, sends_since: 13, avg_score: 26.1 }
+  - { brand: "Quince", brand_slug: quince, first_mention: 2026-11-19, discount: null, sends_since: 13, avg_score: 25.5 }
+  - { brand: "DICK'S Sporting Goods", brand_slug: dicks-sporting-goods, first_mention: 2026-11-20, discount: 50, sends_since: 19, avg_score: 24.5 }
+  - { brand: "Kiehl's Since 1851", brand_slug: kiehls-since-1851, first_mention: 2026-11-20, discount: 30, sends_since: 11, avg_score: 27.5 }
+  - { brand: "Bombas", brand_slug: bombas, first_mention: 2026-11-21, discount: 25, sends_since: 10, avg_score: 28.2 }
+  - { brand: "J.Crew", brand_slug: j-crew, first_mention: 2026-11-22, discount: 50, sends_since: 7, avg_score: 27.0 }
+  - { brand: "Banana Republic", brand_slug: banana-republic, first_mention: 2026-11-24, discount: 40, sends_since: 5, avg_score: 26.2 }
+  - { brand: "Columbia", brand_slug: columbia, first_mention: 2026-11-25, discount: 50, sends_since: 2, avg_score: 27.0 }
 categories:
-  - { industry: ecommerce, sends_vs_baseline: 62 }
-  - { industry: fashion, sends_vs_baseline: 100 }
-  - { industry: home, sends_vs_baseline: 63 }
+  - { industry: ecommerce, sends_vs_baseline: 79 }
+  - { industry: fashion, sends_vs_baseline: 127 }
+  - { industry: home, sends_vs_baseline: 96 }
 ---
